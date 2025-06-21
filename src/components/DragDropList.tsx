@@ -6,7 +6,7 @@ interface DragDropItem {
   description?: string;
   points: number;
   emoji?: string;
-  isActive?: boolean;
+  isActive: boolean;
 }
 
 interface DragDropListProps {
