@@ -116,6 +116,8 @@ export default function Login() {
 
     // Используем стандартные пароли для быстрого входа
     const defaultPasswords: { [key: string]: string } = {
+      'Админ': 'admin2024',
+      'Тест': 'test2024',
       'Папа': 'papa2024',
       'Мама': 'mama2024',
       'Назар': 'nazar2024',
