@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 const prisma = new PrismaClient();
 
@@ -18,7 +18,7 @@ export async function GET(request: Request) {
 
     const userTasks = await prisma.userTask.findMany({
       where: {
-        userId: session.user.id
+        userId: (session as any).user.id
       },
       include: {
         task: true
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
 
     const existingUserTask = await prisma.userTask.findFirst({
       where: {
-        userId: session.user.id,
+        userId: (session as any).user.id,
         taskId: taskId,
         status: 'COMPLETED',
         createdAt: {
@@ -100,7 +100,7 @@ export async function POST(request: Request) {
       // Создаем запись о выполнении задачи
       const newUserTask = await tx.userTask.create({
         data: {
-          userId: session.user.id,
+          userId: (session as any).user.id,
           taskId: taskId,
           status: 'COMPLETED'
         },
@@ -111,7 +111,7 @@ export async function POST(request: Request) {
 
       // Начисляем баллы пользователю
       const updatedUser = await tx.user.update({
-        where: { id: session.user.id },
+        where: { id: (session as any).user.id },
         data: { points: { increment: task.points } }
       });
 
@@ -132,14 +132,14 @@ export async function PUT(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session || session.user.role !== "PARENT") {
+    if (!session || (session as any).user.role !== "PARENT") {
       return NextResponse.json(
         { error: "Недостаточно прав" }, 
         { status: 403 }
       );
     }
 
-    const { id, completed } = await request.json();
+    const { id, status } = await request.json();
 
     if (!id) {
       return NextResponse.json(
@@ -150,7 +150,7 @@ export async function PUT(request: Request) {
 
     const updatedUserTask = await prisma.userTask.update({
       where: { id },
-      data: { completed }
+      data: { status }
     });
 
     return NextResponse.json(updatedUserTask);

@@ -1365,16 +1365,16 @@ export default function ParentDashboard() {
                             style={{
                               background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
                               flex: 1,
-                              color: 'white !important',
-                              fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif !important',
-                              textTransform: 'none !important',
-                              letterSpacing: 'normal !important',
-                              fontWeight: '500 !important',
-                              fontSize: '11px !important',
-                              padding: '10px 6px !important',
-                              minHeight: '36px !important',
-                              border: 'none !important',
-                              borderRadius: '0 !important'
+                              color: 'white',
+                              fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                              textTransform: 'none' as const,
+                              letterSpacing: 'normal',
+                              fontWeight: '500',
+                              fontSize: '11px',
+                              padding: '10px 6px',
+                              minHeight: '36px',
+                              border: 'none',
+                              borderRadius: '0'
                             }}
                           >
                             ✅ Одобрить
@@ -1385,16 +1385,16 @@ export default function ParentDashboard() {
                             style={{
                               background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
                               flex: 1,
-                              color: 'white !important',
-                              fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif !important',
-                              textTransform: 'none !important',
-                              letterSpacing: 'normal !important',
-                              fontWeight: '500 !important',
-                              fontSize: '11px !important',
-                              padding: '10px 6px !important',
-                              minHeight: '36px !important',
-                              border: 'none !important',
-                              borderRadius: '0 !important'
+                              color: 'white',
+                              fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
+                              textTransform: 'none' as const,
+                              letterSpacing: 'normal',
+                              fontWeight: '500',
+                              fontSize: '11px',
+                              padding: '10px 6px',
+                              minHeight: '36px',
+                              border: 'none',
+                              borderRadius: '0'
                             }}
                           >
                             ❌ Отклонить
@@ -1412,7 +1412,7 @@ export default function ParentDashboard() {
                               width: '100%',
                               color: 'white',
                               fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, sans-serif',
-                              textTransform: 'none',
+                              textTransform: 'none' as const,
                               letterSpacing: 'normal',
                               fontWeight: '500',
                               fontSize: '13px',

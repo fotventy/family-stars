@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 const prisma = new PrismaClient();
 
@@ -18,7 +18,7 @@ export async function GET(request: Request) {
 
     let userGifts;
     
-    if (session.user.role === "PARENT") {
+    if ((session as any).user.role === "PARENT") {
       // Родители видят все запросы на подарки от всех детей
       userGifts = await prisma.userGift.findMany({
         where: {
@@ -38,7 +38,7 @@ export async function GET(request: Request) {
       // Дети видят только свои запросы
       userGifts = await prisma.userGift.findMany({
       where: {
-          userId: session.user.id
+          userId: (session as any).user.id
       },
       include: {
         gift: true
@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     }
 
     // Только дети могут выбирать подарки
-    if (session.user.role !== "CHILD") {
+    if ((session as any).user.role !== "CHILD") {
       return NextResponse.json(
         { error: "Только дети могут выбирать подарки" }, 
         { status: 403 }
@@ -101,7 +101,7 @@ export async function POST(request: Request) {
 
     // Проверяем, что у пользователя достаточно баллов
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id }
+      where: { id: (session as any).user.id }
     });
 
     if (!user || user.points < gift.points) {
@@ -116,7 +116,7 @@ export async function POST(request: Request) {
       // Создаем выбор подарка
       const userGift = await tx.userGift.create({
       data: {
-        userId: session.user.id,
+        userId: (session as any).user.id,
         giftId: giftId,
         status: 'REQUESTED'
         },
@@ -127,7 +127,7 @@ export async function POST(request: Request) {
 
       // Списываем баллы у пользователя
       await tx.user.update({
-        where: { id: session.user.id },
+        where: { id: (session as any).user.id },
         data: { points: { decrement: gift.points } }
       });
 
@@ -148,7 +148,7 @@ export async function PUT(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session || session.user.role !== "PARENT") {
+    if (!session || (session as any).user.role !== "PARENT") {
       return NextResponse.json(
         { error: "Недостаточно прав" }, 
         { status: 403 }
@@ -187,7 +187,7 @@ export async function PUT(request: Request) {
       );
     }
 
-    if (userGift.user.parentId !== session.user.id) {
+    if (userGift.user.parentId !== (session as any).user.id) {
       return NextResponse.json(
         { error: "Недостаточно прав" }, 
         { status: 403 }

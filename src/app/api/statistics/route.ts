@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 const prisma = new PrismaClient();
 
@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session || session.user.role !== 'PARENT') {
+    if (!session || (session as any).user.role !== 'PARENT') {
       return NextResponse.json(
         { error: "Недостаточно прав" }, 
         { status: 403 }
@@ -28,7 +28,7 @@ export async function GET(request: Request) {
 
     const children = await prisma.user.findMany({
       where: {
-        parentId: session.user.id,
+        parentId: (session as any).user.id,
         role: 'CHILD'
       }
     });

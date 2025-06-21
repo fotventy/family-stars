@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 const prisma = new PrismaClient();
 
@@ -37,7 +37,7 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session || session.user.role !== "PARENT") {
+    if (!session || (session as any).user.role !== "PARENT") {
       return NextResponse.json(
         { error: "Недостаточно прав" }, 
         { status: 403 }
@@ -77,7 +77,7 @@ export async function PUT(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session || session.user.role !== "PARENT") {
+    if (!session || (session as any).user.role !== "PARENT") {
       return NextResponse.json(
         { error: "Недостаточно прав" }, 
         { status: 403 }
@@ -118,7 +118,7 @@ export async function DELETE(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session || session.user.role !== "PARENT") {
+    if (!session || (session as any).user.role !== "PARENT") {
       return NextResponse.json(
         { error: "Недостаточно прав" }, 
         { status: 403 }

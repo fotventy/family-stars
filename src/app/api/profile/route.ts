@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
@@ -12,10 +12,10 @@ export async function PUT(request: NextRequest) {
     
     console.log("=== PROFILE UPDATE DEBUG ===");
     console.log("Session:", JSON.stringify(session, null, 2));
-    console.log("Session user ID:", session?.user?.id);
-    console.log("Session user:", session?.user);
+    console.log("Session user ID:", (session as any)?.user?.id);
+    console.log("Session user:", (session as any)?.user);
     
-    if (!session?.user?.id) {
+    if (!(session as any)?.user?.id) {
       console.log("❌ No session or user ID found");
       return NextResponse.json({ error: "Необходима авторизация" }, { status: 401 });
     }
@@ -25,7 +25,7 @@ export async function PUT(request: NextRequest) {
     console.log("Request data:", { userId, name, hasCurrentPassword: !!currentPassword, hasNewPassword: !!newPassword });
 
     // Проверяем, что пользователь обновляет свой профиль
-    if (session.user.id !== userId) {
+    if ((session as any).user.id !== userId) {
       return NextResponse.json({ error: "Нет прав для изменения этого профиля" }, { status: 403 });
     }
 

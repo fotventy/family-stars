@@ -256,9 +256,6 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                       background: newGiftEmoji === emoji 
                         ? 'rgba(255, 255, 255, 0.3)' 
                         : 'rgba(255, 255, 255, 0.1)',
-                      border: 'none',
-                      borderRadius: '0',
-                      cursor: 'pointer',
                       border: '2px solid ' + (newGiftEmoji === emoji 
                         ? 'rgba(255, 255, 255, 0.5)' 
                         : 'rgba(255, 255, 255, 0.2)'),

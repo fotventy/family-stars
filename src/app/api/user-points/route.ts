@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 const prisma = new PrismaClient();
 
@@ -17,7 +17,7 @@ export async function GET(request: Request) {
     }
 
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: (session as any).user.id },
       select: { points: true }
     });
 
@@ -62,13 +62,13 @@ export async function POST(request: Request) {
     
     if (action === "add") {
       updatedUser = await prisma.user.update({
-        where: { id: session.user.id },
+        where: { id: (session as any).user.id },
         data: { points: { increment: points } }
       });
     } else if (action === "subtract") {
       // Проверяем, хватает ли баллов
       const currentUser = await prisma.user.findUnique({
-        where: { id: session.user.id }
+        where: { id: (session as any).user.id }
       });
       
       if (!currentUser || currentUser.points < points) {
@@ -79,7 +79,7 @@ export async function POST(request: Request) {
       }
       
       updatedUser = await prisma.user.update({
-        where: { id: session.user.id },
+        where: { id: (session as any).user.id },
         data: { points: { decrement: points } }
       });
     } else {
