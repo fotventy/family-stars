@@ -75,7 +75,11 @@ async function initializeUsers() {
   } catch (error) {
     console.error("Ошибка инициализации:", error);
     return NextResponse.json(
-      { error: "Ошибка создания пользователей" }, 
+      { 
+        error: "Ошибка создания пользователей", 
+        details: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined
+      }, 
       { status: 500 }
     );
   } finally {
