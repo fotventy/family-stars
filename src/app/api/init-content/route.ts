@@ -91,13 +91,13 @@ export async function POST() {
           data: {
             title: giftData.title,
             description: giftData.description,
-            cost: giftData.cost,
+            points: giftData.cost,
           }
         });
 
         createdGifts.push({
           title: newGift.title,
-          cost: newGift.cost,
+          cost: newGift.points,
           emoji: giftData.emoji
         });
 
