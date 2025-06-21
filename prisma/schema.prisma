@@ -37,6 +37,7 @@ model Task {
   points      Int
   isActive    Boolean     @default(true)
   emoji       String?
+  sortOrder   Int         @default(0)
   
   userTasks   UserTask[]
   
@@ -64,6 +65,7 @@ model Gift {
   points      Int
   isActive    Boolean     @default(true)
   emoji       String?
+  sortOrder   Int         @default(0)
   
   userGifts   UserGift[]
   

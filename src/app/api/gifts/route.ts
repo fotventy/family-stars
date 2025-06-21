@@ -20,6 +20,9 @@ export async function GET(request: Request) {
     const gifts = await prisma.gift.findMany({
       where: {
         isActive: true
+      },
+      orderBy: {
+        sortOrder: 'asc'
       }
     });
 

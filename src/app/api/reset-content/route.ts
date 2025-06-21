@@ -48,19 +48,21 @@ export async function POST() {
 
     // Создаем задачи
     await prisma.task.createMany({
-      data: baseTasks.map(task => ({
+      data: baseTasks.map((task, index) => ({
         title: task.title,
         description: task.description,
-        points: task.points
+        points: task.points,
+        sortOrder: index
       }))
     });
 
     // Создаем подарки
     await prisma.gift.createMany({
-      data: baseGifts.map(gift => ({
+      data: baseGifts.map((gift, index) => ({
         title: gift.title,
         description: gift.description,
-        points: gift.points
+        points: gift.points,
+        sortOrder: index
       }))
     });
 

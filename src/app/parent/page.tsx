@@ -9,6 +9,7 @@ import { GiftManagementModal } from "@/components/GiftManagementModal";
 import { TaskManagementModal } from "@/components/TaskManagementModal";
 import { StatisticsChart } from "@/components/StatisticsChart";
 import { ProfileModal } from "@/components/ProfileModal";
+import { DragDropList } from "@/components/DragDropList";
 
 interface User {
   id: string;
@@ -317,6 +318,45 @@ export default function ParentDashboard() {
       }
     } catch (error) {
       console.error("Ошибка при обновлении статуса выбора:", error);
+    }
+  };
+
+  const handleReorder = async (type: 'tasks' | 'gifts', items: any[]) => {
+    try {
+      console.log(`🔄 Переупорядочиваем ${type}:`, items.map(item => item.title));
+      
+      const response = await fetch("/api/reorder", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ type, items })
+      });
+
+      if (response.ok) {
+        console.log(`✅ Порядок ${type} обновлен`);
+        // Обновляем локальное состояние
+        if (type === 'tasks') {
+          setTasks(items);
+        } else {
+          setGifts(items);
+        }
+      } else {
+        const error = await response.json();
+        console.error("Ошибка переупорядочивания:", error);
+        // Возвращаем исходное состояние при ошибке
+        if (type === 'tasks') {
+          fetchTasks();
+        } else {
+          fetchGifts();
+        }
+      }
+    } catch (error) {
+      console.error("Ошибка при переупорядочивании:", error);
+      // Возвращаем исходное состояние при ошибке
+      if (type === 'tasks') {
+        fetchTasks();
+      } else {
+        fetchGifts();
+      }
     }
   };
 
@@ -1145,48 +1185,13 @@ export default function ParentDashboard() {
                 </button>
               </div>
 
-              <div className="cards-grid tasks">
-                {tasks.map(task => (
-                  <div key={task.id} className="premium-card">
-                    <div className="card-content">
-                      <div style={{textAlign: 'center'}}>
-                        <div className="card-emoji" style={{fontSize: '40px', marginBottom: '12px'}}>
-                          {getTaskEmoji(task)}
-                        </div>
-                        <h3 className="card-title fortnite-text">{task.title}</h3>
-                        {task.description && (
-                          <p className="card-description">{task.description}</p>
-                        )}
-                        <div className="points-badge" style={{marginBottom: '12px'}}>
-                          <span>⭐</span>
-                          {task.points} звёзд
-                        </div>
-                        <div className="card-actions" style={{justifyContent: 'center'}}>
-                          <button 
-                            onClick={() => handleEditTask(task)}
-                            className="premium-button edit"
-                          >
-                            ✏️
-                          </button>
-                          <button 
-                            onClick={() => deleteTask(task.id)}
-                            className="premium-button delete"
-                          >
-                            🗑️
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-      ))}
-                {tasks.length === 0 && (
-                  <div className="empty-state">
-                    <div className="empty-emoji">📝</div>
-                    <h3 className="empty-title">Пока нет заданий</h3>
-                    <p className="empty-description">Создайте первое задание для детей</p>
-                  </div>
-                )}
-              </div>
+              <DragDropList
+                items={tasks}
+                type="tasks"
+                onReorder={(items) => handleReorder('tasks', items)}
+                onEdit={handleEditTask}
+                onDelete={deleteTask}
+              />
     </div>
           )}
 
@@ -1207,48 +1212,13 @@ export default function ParentDashboard() {
         </button>
       </div>
 
-              <div className="cards-grid gifts">
-      {gifts.map(gift => (
-                  <div key={gift.id} className="premium-card">
-                    <div className="card-content">
-                      <div style={{textAlign: 'center'}}>
-                        <div className="card-emoji" style={{fontSize: '64px', marginBottom: '16px'}}>
-                          {getGiftEmoji(gift)}
-                        </div>
-                        <h3 className="card-title fortnite-text">{gift.title}</h3>
-                        {gift.description && (
-                          <p className="card-description">{gift.description}</p>
-                        )}
-                        <div className="points-badge" style={{marginBottom: '16px'}}>
-                          <span>⭐</span>
-                          {gift.points} звёзд
-                        </div>
-                        <div className="card-actions" style={{justifyContent: 'center'}}>
-                          <button 
-                            onClick={() => handleEditGift(gift)}
-                            className="premium-button edit"
-                          >
-                            ✏️
-                          </button>
-                          <button 
-                            onClick={() => deleteGift(gift.id)}
-                            className="premium-button delete"
-                          >
-                            🗑️
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {gifts.length === 0 && (
-                  <div className="empty-state" style={{gridColumn: '1 / -1'}}>
-                    <div className="empty-emoji">🏪</div>
-                    <h3 className="empty-title">Магазин подарков пуст</h3>
-                    <p className="empty-description">Добавьте первые подарки для мотивации детей</p>
-                  </div>
-                )}
-              </div>
+              <DragDropList
+                items={gifts}
+                type="gifts"
+                onReorder={(items) => handleReorder('gifts', items)}
+                onEdit={handleEditGift}
+                onDelete={deleteGift}
+              />
             </div>
           )}
 

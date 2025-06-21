@@ -30,6 +30,7 @@ export async function GET() {
         "points" INTEGER NOT NULL,
         "isActive" BOOLEAN NOT NULL DEFAULT true,
         "emoji" TEXT,
+        "sortOrder" INTEGER NOT NULL DEFAULT 0,
         "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
         "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT "Task_pkey" PRIMARY KEY ("id")
@@ -56,6 +57,7 @@ export async function GET() {
         "points" INTEGER NOT NULL,
         "isActive" BOOLEAN NOT NULL DEFAULT true,
         "emoji" TEXT,
+        "sortOrder" INTEGER NOT NULL DEFAULT 0,
         "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
         "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT "Gift_pkey" PRIMARY KEY ("id")
