@@ -286,6 +286,18 @@ export const DragDropList: React.FC<DragDropListProps> = ({
           font-size: 16px;
           opacity: 0.8;
         }
+
+        .card-title {
+          color: white !important;
+        }
+
+        .card-description {
+          color: rgba(255, 255, 255, 0.9) !important;
+        }
+
+        .points-badge {
+          color: white !important;
+        }
       `}</style>
 
       <div className="cards-grid">
