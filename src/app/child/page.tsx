@@ -165,34 +165,34 @@ export default function ChildDashboard() {
   };
 
   const getTaskEmoji = (title: string) => {
-    if (title.includes('зарядк')) return '💪';
-    if (title.includes('уборк') || title.includes('убрать')) return '🧹';
-    if (title.includes('посуд')) return '🍽️';
-    if (title.includes('урок') || title.includes('задан')) return '📚';
-    if (title.includes('зуб')) return '🦷';
-    if (title.includes('кровать')) return '🛏️';
-    if (title.includes('мусор')) return '🗑️';
-    if (title.includes('готовк')) return '👩‍🍳';
-    if (title.includes('цвет')) return '🌱';
-    if (title.includes('книг')) return '📖';
+    const titleLower = title.toLowerCase();
+    if (titleLower.includes('кровать')) return '🛏️';
+    if (titleLower.includes('зарядк')) return '💪';
+    if (titleLower.includes('зуб')) return '🦷';
+    if (titleLower.includes('убра')) return '🧹';
+    if (titleLower.includes('задан')) return '📚';
+    if (titleLower.includes('посуд')) return '🍽️';
+    if (titleLower.includes('мусор')) return '🗑️';
+    if (titleLower.includes('готовк')) return '👩‍🍳';
     return '✨';
   };
 
   const getGiftEmoji = (title: string) => {
-    if (title.includes('игра') || title.includes('Fortnite') || title.includes('Minecraft')) return '🎮';
-    if (title.includes('YouTube')) return '📺';
-    if (title.includes('чупа')) return '🍭';
-    if (title.includes('кола')) return '🥤';
-    if (title.includes('пицца')) return '🍕';
-    if (title.includes('кино')) return '🎬';
-    if (title.includes('телефон')) return '📱';
-    if (title.includes('лего')) return '🧱';
-    if (title.includes('отбой')) return '😴';
-    if (title.includes('фильм')) return '🎥';
-    if (title.includes('макдоналдс')) return '🍟';
-    if (title.includes('наушники')) return '🎧';
-    if (title.includes('мышк')) return '🖱️';
-    if (title.includes('аквапарк')) return '🏊‍♂️';
+    const titleLower = title.toLowerCase();
+    if (titleLower.includes('fortnite') || titleLower.includes('minecraft')) return '🎮';
+    if (titleLower.includes('youtube')) return '📺';
+    if (titleLower.includes('чупа')) return '🍭';
+    if (titleLower.includes('кола')) return '🥤';
+    if (titleLower.includes('фильм')) return '🎥';
+    if (titleLower.includes('отбой')) return '😴';
+    if (titleLower.includes('телефон')) return '📱';
+    if (titleLower.includes('макдоналдс')) return '🍟';
+    if (titleLower.includes('пицца')) return '🍕';
+    if (titleLower.includes('кино')) return '🎬';
+    if (titleLower.includes('мышк')) return '🖱️';
+    if (titleLower.includes('лего')) return '🧱';
+    if (titleLower.includes('наушники')) return '🎧';
+    if (titleLower.includes('аквапарк')) return '🏊‍♂️';
     return '🎁';
   };
 
