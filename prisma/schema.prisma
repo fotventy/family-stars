@@ -1,0 +1,85 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  password  String
+  role      String   @default("CHILD") // PARENT или CHILD
+  points    Int      @default(0)
+  parentId  String?
+  parent    User?    @relation("FamilyRelation", fields: [parentId], references: [id])
+  children  User[]   @relation("FamilyRelation")
+  
+  tasks     UserTask[]
+  gifts     UserGift[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Task {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  points      Int
+  isActive    Boolean     @default(true)
+  emoji       String?
+  
+  userTasks   UserTask[]
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model UserTask {
+  id        String      @id @default(cuid())
+  userId    String
+  taskId    String
+  status    String      @default("PENDING") // PENDING, COMPLETED, APPROVED, REJECTED
+  
+  user      User        @relation(fields: [userId], references: [id])
+  task      Task        @relation(fields: [taskId], references: [id])
+  
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
+
+model Gift {
+  id          String      @id @default(cuid())
+  title       String
+  description String?
+  points      Int
+  isActive    Boolean     @default(true)
+  emoji       String?
+  
+  userGifts   UserGift[]
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model UserGift {
+  id        String      @id @default(cuid())
+  userId    String
+  giftId    String
+  status    String      @default("REQUESTED") // REQUESTED, APPROVED, REJECTED, REDEEMED
+  
+  user      User        @relation(fields: [userId], references: [id])
+  gift      Gift        @relation(fields: [giftId], references: [id])
+  
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+}
