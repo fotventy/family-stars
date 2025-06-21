@@ -5,6 +5,14 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 export async function POST() {
+  return await initializeUsers();
+}
+
+export async function GET() {
+  return await initializeUsers();
+}
+
+async function initializeUsers() {
   try {
     // Проверяем, есть ли уже пользователи
     const existingUsers = await prisma.user.findMany();
