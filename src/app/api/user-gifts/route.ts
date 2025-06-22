@@ -148,7 +148,14 @@ export async function PUT(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
+    console.log(`🔄 PUT /api/user-gifts - сессия:`, session ? {
+      id: (session as any).user.id,
+      name: (session as any).user.name,
+      role: (session as any).user.role
+    } : 'нет сессии');
+    
     if (!session || (session as any).user.role !== "PARENT") {
+      console.log(`❌ Недостаточно прав: role = ${(session as any)?.user?.role}`);
       return NextResponse.json(
         { error: "Недостаточно прав" }, 
         { status: 403 }
@@ -156,8 +163,10 @@ export async function PUT(request: Request) {
     }
 
     const { userGiftId, status } = await request.json();
+    console.log(`📝 Данные запроса: userGiftId=${userGiftId}, status=${status}`);
 
     if (!userGiftId || !status) {
+      console.log(`❌ Неполные данные: userGiftId=${userGiftId}, status=${status}`);
       return NextResponse.json(
         { error: "ID выбора и статус обязательны" }, 
         { status: 400 }
@@ -165,6 +174,7 @@ export async function PUT(request: Request) {
     }
 
     if (!['APPROVED', 'REJECTED', 'REDEEMED'].includes(status)) {
+      console.log(`❌ Неверный статус: ${status}`);
       return NextResponse.json(
         { error: "Неверный статус" }, 
         { status: 400 }
@@ -180,16 +190,29 @@ export async function PUT(request: Request) {
       }
     });
 
+    console.log(`🔍 Найденный userGift:`, userGift ? {
+      id: userGift.id,
+      status: userGift.status,
+      userId: userGift.userId,
+      userParentId: userGift.user.parentId,
+      userName: userGift.user.name,
+      giftTitle: userGift.gift.title
+    } : 'не найден');
+
     if (!userGift) {
+      console.log(`❌ Выбор не найден: ${userGiftId}`);
       return NextResponse.json(
         { error: "Выбор не найден" }, 
         { status: 404 }
       );
     }
 
+    console.log(`🔐 Проверка прав: userGift.user.parentId (${userGift.user.parentId}) === session.user.id (${(session as any).user.id})`);
+    
     if (userGift.user.parentId !== (session as any).user.id) {
+      console.log(`❌ Недостаточно прав для управления подарком`);
       return NextResponse.json(
-        { error: "Недостаточно прав" }, 
+        { error: "Недостаточно прав для управления этим подарком" }, 
         { status: 403 }
       );
     }

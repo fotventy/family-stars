@@ -307,17 +307,28 @@ export default function ParentDashboard() {
 
   const updateUserGiftStatus = async (userGiftId: string, status: string) => {
     try {
+      console.log(`🔄 Обновляем статус подарка ${userGiftId} на ${status}`);
+      
       const response = await fetch("/api/user-gifts", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userGiftId, status })
       });
 
+      console.log(`📡 Ответ сервера:`, response.status, response.statusText);
+
       if (response.ok) {
+        const result = await response.json();
+        console.log(`✅ Статус обновлен:`, result);
         fetchUserGifts();
+      } else {
+        const error = await response.json();
+        console.error(`❌ Ошибка сервера:`, error);
+        alert(`Ошибка: ${error.error || 'Неизвестная ошибка'}`);
       }
     } catch (error) {
-      console.error("Ошибка при обновлении статуса выбора:", error);
+      console.error("❌ Ошибка при обновлении статуса выбора:", error);
+      alert(`Ошибка сети: ${error}`);
     }
   };
 
