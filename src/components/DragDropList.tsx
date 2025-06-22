@@ -142,7 +142,7 @@ export const DragDropList: React.FC<DragDropListProps> = ({
           <span>⭐</span>
           {item.points} звёзд
         </div>
-        <div className="card-actions" style={{justifyContent: 'center'}}>
+        <div className="card-actions">
           {onEdit && (
             <button 
               onClick={(e) => {
@@ -151,7 +151,8 @@ export const DragDropList: React.FC<DragDropListProps> = ({
               }}
               className="premium-button edit"
             >
-              ✏️
+              <span>✏️</span>
+              Изменить
             </button>
           )}
           {onDelete && (
@@ -162,7 +163,8 @@ export const DragDropList: React.FC<DragDropListProps> = ({
               }}
               className="premium-button delete"
             >
-              🗑️
+              <span>🗑️</span>
+              Удалить
             </button>
           )}
         </div>
@@ -297,6 +299,45 @@ export const DragDropList: React.FC<DragDropListProps> = ({
 
         .points-badge {
           color: white !important;
+        }
+
+        .premium-button {
+          color: white !important;
+          font-size: 11px !important;
+          padding: 8px 12px !important;
+          border-radius: 8px !important;
+          border: none !important;
+          font-weight: 500 !important;
+          cursor: pointer !important;
+          transition: all 0.3s ease !important;
+          display: flex !important;
+          align-items: center !important;
+          gap: 4px !important;
+        }
+
+        .premium-button.edit {
+          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+        }
+
+        .premium-button.edit:hover {
+          background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+          transform: translateY(-1px) !important;
+        }
+
+        .premium-button.delete {
+          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+        }
+
+        .premium-button.delete:hover {
+          background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
+          transform: translateY(-1px) !important;
+        }
+
+        .card-actions {
+          display: flex !important;
+          gap: 8px !important;
+          justify-content: center !important;
+          margin-top: 12px !important;
         }
       `}</style>
 
