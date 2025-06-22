@@ -289,18 +289,6 @@ export const DragDropList: React.FC<DragDropListProps> = ({
           opacity: 0.8;
         }
 
-        .card-title {
-          color: white !important;
-        }
-
-        .card-description {
-          color: rgba(255, 255, 255, 0.9) !important;
-        }
-
-        .points-badge {
-          color: white !important;
-        }
-
         .premium-button {
           color: white !important;
           font-size: 11px !important;
@@ -316,21 +304,27 @@ export const DragDropList: React.FC<DragDropListProps> = ({
         }
 
         .premium-button.edit {
-          background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%) !important;
+          background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
+          color: #1f2937 !important;
+          font-weight: 600 !important;
         }
 
         .premium-button.edit:hover {
-          background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%) !important;
+          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
           transform: translateY(-1px) !important;
+          box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4) !important;
         }
 
         .premium-button.delete {
           background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+          color: white !important;
+          font-weight: 600 !important;
         }
 
         .premium-button.delete:hover {
           background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
           transform: translateY(-1px) !important;
+          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4) !important;
         }
 
         .card-actions {
@@ -338,6 +332,37 @@ export const DragDropList: React.FC<DragDropListProps> = ({
           gap: 8px !important;
           justify-content: center !important;
           margin-top: 12px !important;
+        }
+
+        .premium-card {
+          background: rgba(255, 255, 255, 0.15) !important;
+          backdrop-filter: blur(10px) !important;
+          border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        }
+
+        .card-content {
+          color: #1f2937 !important;
+        }
+
+        .card-title {
+          color: #1f2937 !important;
+          font-weight: 700 !important;
+          text-shadow: none !important;
+        }
+
+        .card-description {
+          color: #374151 !important;
+        }
+
+        .points-badge {
+          color: #1f2937 !important;
+          background: rgba(255, 255, 255, 0.8) !important;
+          border-radius: 12px !important;
+          padding: 4px 12px !important;
+          display: inline-flex !important;
+          align-items: center !important;
+          gap: 4px !important;
+          font-weight: 600 !important;
         }
       `}</style>
 
