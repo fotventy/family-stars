@@ -174,7 +174,7 @@ export default function FirstLogin() {
           text-shadow: 0 4px 15px rgba(0,0,0,0.3);
           margin-bottom: 16px;
           text-align: center;
-          font-family: 'Fortnite Battlefest', 'Inter', sans-serif !important;
+          font-family: 'Inter', sans-serif !important;
         }
 
         .welcome-text {
@@ -227,7 +227,7 @@ export default function FirstLogin() {
           transition: all 0.3s ease;
           text-transform: uppercase;
           letter-spacing: 1px;
-          font-family: 'Fortnite Battlefest', 'Inter', sans-serif !important;
+          font-family: 'Inter', sans-serif !important;
           position: relative;
           overflow: hidden;
           width: 100%;

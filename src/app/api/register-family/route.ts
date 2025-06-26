@@ -30,14 +30,25 @@ export async function POST(request: Request) {
       );
     }
 
-    // Проверяем, не существует ли уже пользователь с таким email
-    const existingUser = await prisma.user.findUnique({
+    // Проверяем, не существует ли уже пользователь с таким email или именем
+    const existingUserByEmail = await prisma.user.findUnique({
       where: { email }
     });
 
-    if (existingUser) {
+    if (existingUserByEmail) {
       return NextResponse.json(
         { error: "Пользователь с таким email уже существует" }, 
+        { status: 400 }
+      );
+    }
+
+    const existingUserByName = await prisma.user.findUnique({
+      where: { name: parentName }
+    });
+
+    if (existingUserByName) {
+      return NextResponse.json(
+        { error: "Пользователь с таким именем уже существует" }, 
         { status: 400 }
       );
     }
