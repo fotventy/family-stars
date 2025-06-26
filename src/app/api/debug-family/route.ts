@@ -70,7 +70,7 @@ export async function GET() {
       success: true,
       session: session ? {
         user: (session as any).user,
-        expires: session.expires
+        expires: (session as any).expires
       } : null,
       database: {
         userCount,
