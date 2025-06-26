@@ -13,15 +13,38 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Новая модель для семей
+model Family {
+  id          String   @id @default(cuid())
+  name        String
+  inviteCode  String   @unique // для приглашений новых членов
+  adminId     String   @unique // ID администратора семьи
+  admin       User     @relation("FamilyAdmin", fields: [adminId], references: [id])
+  
+  members     User[]   @relation("FamilyMembers")
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
 model User {
   id        String   @id @default(cuid())
   name      String   @unique
   password  String
-  role      String   @default("CHILD") // PARENT или CHILD
+  role      String   @default("CHILD") // PARENT, CHILD, FAMILY_ADMIN
   points    Int      @default(0)
   parentId  String?
   parent    User?    @relation("FamilyRelation", fields: [parentId], references: [id])
   children  User[]   @relation("FamilyRelation")
+  
+  // Новые семейные поля (опциональные для совместимости)
+  email            String?   @unique
+  familyId         String?
+  family           Family?   @relation("FamilyMembers", fields: [familyId], references: [id])
+  adminFamily      Family?   @relation("FamilyAdmin") // семья, где этот пользователь админ
+  tempPassword     String?   // токен для первого входа
+  mustChangePassword Boolean @default(false)
+  isEmailVerified    Boolean @default(false)
   
   tasks     UserTask[]
   gifts     UserGift[]
