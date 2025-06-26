@@ -21,11 +21,11 @@ function generateInviteCode() {
 
 export async function POST(request: Request) {
   try {
-    const { email, familyName } = await request.json();
+    const { email, familyName, parentName, parentType } = await request.json();
 
-    if (!email || !familyName) {
+    if (!email || !familyName || !parentName || !parentType) {
       return NextResponse.json(
-        { error: "Email и название семьи обязательны" }, 
+        { error: "Все поля обязательны для заполнения" }, 
         { status: 400 }
       );
     }
@@ -47,10 +47,10 @@ export async function POST(request: Request) {
     const hashedPassword = await hash(tempPassword, 10);
     const inviteCode = generateInviteCode();
 
-    // Создаем администратора семьи
+    // Создаем первого родителя как администратора семьи
     const admin = await prisma.user.create({
       data: {
-        name: `Админ семьи ${familyName}`,
+        name: parentName,
         email,
         password: hashedPassword,
         role: "FAMILY_ADMIN",
@@ -75,13 +75,15 @@ export async function POST(request: Request) {
       data: { familyId: family.id }
     });
 
-    console.log(`✅ Создана семья: ${familyName} с админом ${email}`);
+    console.log(`✅ Создана семья: ${familyName} с ${parentType} ${parentName} (${email})`);
 
     // В реальном приложении здесь бы отправляли email
     // Пока просто возвращаем временный пароль
     return NextResponse.json({
       success: true,
       message: `Семья "${familyName}" успешно создана!`,
+      parentName,
+      parentType,
       tempPassword, // В production убрать и отправить по email
       loginUrl: `${process.env.NEXTAUTH_URL || 'https://family-stars.vercel.app'}/login`,
       familyCode: inviteCode

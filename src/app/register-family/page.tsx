@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 export default function RegisterFamily() {
   const [email, setEmail] = useState("");
   const [familyName, setFamilyName] = useState("");
+  const [parentName, setParentName] = useState("");
+  const [parentType, setParentType] = useState<"папа" | "мама">("папа");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -15,8 +17,8 @@ export default function RegisterFamily() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !familyName) {
-      setError("Email и название семьи обязательны");
+    if (!email || !familyName || !parentName) {
+      setError("Все поля обязательны для заполнения");
       return;
     }
 
@@ -28,7 +30,12 @@ export default function RegisterFamily() {
       const response = await fetch("/api/register-family", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, familyName })
+        body: JSON.stringify({ 
+          email, 
+          familyName, 
+          parentName,
+          parentType 
+        })
       });
 
       const data = await response.json();
@@ -392,6 +399,13 @@ export default function RegisterFamily() {
                 </div>
                 
                 <div className="result-item">
+                  <span className="result-label">Администратор:</span>
+                  <span className="result-value">
+                    {result.parentType === "папа" ? "👨" : "👩"} {result.parentName} ({result.parentType})
+                  </span>
+                </div>
+                
+                <div className="result-item">
                   <span className="result-label">Код семьи:</span>
                   <span className="result-value">{result.familyCode}</span>
                 </div>
@@ -420,21 +434,6 @@ export default function RegisterFamily() {
           ) : (
             <form onSubmit={handleSubmit} className="premium-form">
               <div className="form-group">
-                <label htmlFor="email" className="form-label">
-                  Email администратора
-                </label>
-                <input
-                  type="email"
-                  id="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="form-input"
-                  placeholder="admin@example.com"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
                 <label htmlFor="familyName" className="form-label">
                   Название семьи
                 </label>
@@ -445,6 +444,64 @@ export default function RegisterFamily() {
                   onChange={(e) => setFamilyName(e.target.value)}
                   className="form-input"
                   placeholder="Семья Ивановых"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="parentName" className="form-label">
+                  Имя первого родителя
+                </label>
+                <input
+                  type="text"
+                  id="parentName"
+                  value={parentName}
+                  onChange={(e) => setParentName(e.target.value)}
+                  className="form-input"
+                  placeholder="Например: Александр"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">
+                  Кто будет первым администратором?
+                </label>
+                <div style={{
+                  display: "flex",
+                  gap: "16px",
+                  justifyContent: "center"
+                }}>
+                  <button
+                    type="button"
+                    onClick={() => setParentType("папа")}
+                    className={`premium-button ${parentType === "папа" ? "primary" : "secondary"}`}
+                    style={{ flex: 1 }}
+                  >
+                    👨 Папа
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setParentType("мама")}
+                    className={`premium-button ${parentType === "мама" ? "primary" : "secondary"}`}
+                    style={{ flex: 1 }}
+                  >
+                    👩 Мама
+                  </button>
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="email" className="form-label">
+                  Email для восстановления пароля
+                </label>
+                <input
+                  type="email"
+                  id="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="form-input"
+                  placeholder="admin@example.com"
                   required
                 />
               </div>

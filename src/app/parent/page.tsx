@@ -69,7 +69,7 @@ export default function ParentDashboard() {
       redirect("/login");
     }
 
-    if (status === "authenticated" && session?.user.role === "PARENT") {
+    if (status === "authenticated" && (session?.user.role === "PARENT" || session?.user.role === "FAMILY_ADMIN")) {
       fetchUsers();
       fetchTasks();
       fetchGifts();
@@ -490,7 +490,7 @@ export default function ParentDashboard() {
     );
   }
 
-  if (status === "unauthenticated" || session?.user.role !== "PARENT") {
+  if (status === "unauthenticated" || (session?.user.role !== "PARENT" && session?.user.role !== "FAMILY_ADMIN")) {
     return null;
   }
 
