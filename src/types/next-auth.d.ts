@@ -5,20 +5,20 @@ declare module "next-auth" {
     user: {
       id: string
       name: string
-      role: string
+      role: "PARENT" | "CHILD" | "FAMILY_ADMIN"
     }
   }
 
   interface User {
     id: string
     name: string
-    role: string
+    role: "PARENT" | "CHILD" | "FAMILY_ADMIN"
   }
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
     id: string
-    role: string
+    role: "PARENT" | "CHILD" | "FAMILY_ADMIN"
   }
 } 
