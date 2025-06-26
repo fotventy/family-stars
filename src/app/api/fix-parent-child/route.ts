@@ -5,23 +5,27 @@ const prisma = new PrismaClient();
 
 export async function POST() {
   try {
-    console.log("🔧 Устанавливаем связи parent-child...");
+    console.log("🔧 Устанавливаем связи parent-child для семьи...");
 
-    // Находим первого родителя (Папа или Мама)
-    const parent = await prisma.user.findFirst({
+    // Находим всех родителей
+    const parents = await prisma.user.findMany({
       where: { role: "PARENT" }
     });
 
-    if (!parent) {
+    if (parents.length === 0) {
       return NextResponse.json({
         success: false,
-        error: "Родитель не найден"
+        error: "Родители не найдены"
       }, { status: 404 });
     }
 
-    console.log(`👨‍👩‍👧‍👦 Найден родитель: ${parent.name} (${parent.id})`);
+    console.log(`👨‍👩‍👧‍👦 Найдено родителей: ${parents.map(p => p.name).join(', ')}`);
 
-    // Обновляем всех детей, устанавливая им parentId
+    // Найдем основного родителя (Папа, если есть, иначе первый)
+    const mainParent = parents.find(p => p.name === 'Папа') || parents[0];
+    console.log(`👑 Основной родитель: ${mainParent.name} (${mainParent.id})`);
+
+    // Обновляем всех детей, устанавливая им parentId основного родителя
     const children = await prisma.user.findMany({
       where: { role: "CHILD" }
     });
@@ -31,9 +35,9 @@ export async function POST() {
     for (const child of children) {
       await prisma.user.update({
         where: { id: child.id },
-        data: { parentId: parent.id }
+        data: { parentId: mainParent.id }
       });
-      console.log(`✅ ${child.name} теперь ребенок ${parent.name}`);
+      console.log(`✅ ${child.name} теперь ребенок ${mainParent.name}`);
     }
 
     // Проверяем результат
@@ -46,17 +50,23 @@ export async function POST() {
 
     return NextResponse.json({
       success: true,
-      message: "Связи parent-child успешно установлены!",
-      parent: {
-        id: parent.id,
-        name: parent.name
+      message: "Связи parent-child успешно установлены для всей семьи!",
+      mainParent: {
+        id: mainParent.id,
+        name: mainParent.name
       },
+      allParents: parents.map(p => ({
+        id: p.id,
+        name: p.name,
+        role: p.role
+      })),
       children: updatedChildren.map(child => ({
         id: child.id,
         name: child.name,
         parentId: child.parentId,
         parentName: child.parent?.name
-      }))
+      })),
+      note: "Все родители в семье теперь имеют доступ ко всем детям"
     });
 
   } catch (error) {

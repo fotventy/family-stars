@@ -26,12 +26,14 @@ export async function GET(request: Request) {
       startDate.setMonth(startDate.getMonth() - 1);
     }
 
+    // Для семейной системы - все родители видят всех детей
     const children = await prisma.user.findMany({
       where: {
-        parentId: (session as any).user.id,
         role: 'CHILD'
       }
     });
+
+    console.log(`📊 Родитель ${(session as any).user.name} запрашивает статистику по ${children.length} детям: ${children.map(c => c.name).join(', ')}`);
 
     const statistics = await Promise.all(children.map(async (child) => {
       const completedTasks = await prisma.userTask.findMany({
@@ -59,6 +61,8 @@ export async function GET(request: Request) {
         giftsRedeemed: redeemedGifts.length
       };
     }));
+
+    console.log(`✅ Статистика сформирована для ${statistics.length} детей`);
 
     return NextResponse.json(statistics);
   } catch (error) {

@@ -181,7 +181,7 @@ export async function PUT(request: Request) {
       );
     }
 
-    // Проверяем, что выбор принадлежит ребенку этого родителя
+    // Проверяем, что выбор существует и принадлежит ребенку
     const userGift = await prisma.userGift.findUnique({
       where: { id: userGiftId },
       include: {
@@ -194,66 +194,89 @@ export async function PUT(request: Request) {
       id: userGift.id,
       status: userGift.status,
       userId: userGift.userId,
-      userParentId: userGift.user.parentId,
       userName: userGift.user.name,
+      userRole: userGift.user.role,
       giftTitle: userGift.gift.title
     } : 'не найден');
 
     if (!userGift) {
-      console.log(`❌ Выбор не найден: ${userGiftId}`);
+      console.log(`❌ Выбор подарка не найден`);
       return NextResponse.json(
-        { error: "Выбор не найден" }, 
+        { error: "Выбор подарка не найден" }, 
         { status: 404 }
       );
     }
 
-    console.log(`🔐 Проверка прав: userGift.user.parentId (${userGift.user.parentId}) === session.user.id (${(session as any).user.id})`);
-    
-    if (userGift.user.parentId !== (session as any).user.id) {
-      console.log(`❌ Недостаточно прав для управления подарком`);
+    // В семейной системе все родители могут управлять выборами всех детей
+    if (userGift.user.role !== 'CHILD') {
+      console.log(`❌ Выбор принадлежит не ребенку: ${userGift.user.role}`);
       return NextResponse.json(
-        { error: "Недостаточно прав для управления этим подарком" }, 
+        { error: "Можно управлять только выборами детей" }, 
         { status: 403 }
       );
     }
 
-    // Если выбор отклоняется, возвращаем баллы
-    let updatedUserGift;
-    if (status === 'REJECTED' && userGift.status === 'REQUESTED') {
-      updatedUserGift = await prisma.$transaction(async (tx) => {
-        // Возвращаем баллы пользователю
-        await tx.user.update({
-          where: { id: userGift.userId },
-          data: { points: { increment: userGift.gift.points } }
-        });
+    console.log(`✅ Родитель ${(session as any).user.name} управляет выбором ребенка ${userGift.user.name}`);
 
-        // Обновляем статус выбора
-        return await tx.userGift.update({
-          where: { id: userGiftId },
-          data: { status },
-          include: {
-            gift: true,
-            user: true
+    // Логика обновления баллов при смене статуса
+    let updatedUser = null;
+    
+    if (status === 'APPROVED' && userGift.status === 'REQUESTED') {
+      // При одобрении списываем баллы
+      updatedUser = await prisma.user.update({
+        where: { id: userGift.userId },
+        data: {
+          points: {
+            decrement: userGift.gift.points
           }
-        });
+        }
       });
-    } else {
-      updatedUserGift = await prisma.userGift.update({
-        where: { id: userGiftId },
-        data: { status },
-        include: {
-          gift: true,
-          user: true
-      }
-    });
+      console.log(`💰 У ${userGift.user.name} списано ${userGift.gift.points} звёзд`);
+    } else if (status === 'REJECTED' && userGift.status === 'APPROVED') {
+      // При отклонении возвращаем баллы
+      updatedUser = await prisma.user.update({
+        where: { id: userGift.userId },
+        data: {
+          points: {
+            increment: userGift.gift.points
+          }
+        }
+      });
+      console.log(`💰 ${userGift.user.name} вернули ${userGift.gift.points} звёзд`);
     }
 
-    return NextResponse.json(updatedUserGift);
+    // Обновляем статус выбора
+    const updatedUserGift = await prisma.userGift.update({
+      where: { id: userGiftId },
+      data: { status },
+      include: {
+        gift: true,
+        user: true
+      }
+    });
+
+    console.log(`✅ Статус выбора обновлен: ${userGift.status} → ${status}`);
+
+    return NextResponse.json({
+      success: true,
+      userGift: updatedUserGift,
+      updatedUser: updatedUser ? {
+        id: updatedUser.id,
+        name: updatedUser.name,
+        points: updatedUser.points
+      } : null
+    });
   } catch (error) {
-    console.error("Ошибка при обновлении статуса выбора:", error);
+    console.error("❌ Ошибка при обновлении статуса выбора:", error);
     return NextResponse.json(
-      { error: "Внутренняя ошибка сервера" }, 
+      { 
+        error: "Внутренняя ошибка сервера",
+        details: error instanceof Error ? error.message : String(error)
+      }, 
       { status: 500 }
     );
+
+  } finally {
+    await prisma.$disconnect();
   }
 } 
