@@ -3,27 +3,68 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const familyCode = searchParams.get('familyCode');
+
     console.log("📋 Получаем список пользователей для страницы логина...");
     
-    // Получаем всех пользователей
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        role: true,
-        points: true
-      },
-      orderBy: [
-        { role: 'desc' }, // PARENT сначала
-        { name: 'asc' }
-      ]
-    });
+    if (familyCode) {
+      // Ищем семью по коду приглашения
+      console.log(`🔍 Поиск семьи по коду: ${familyCode}`);
+      
+      const family = await prisma.family.findUnique({
+        where: { inviteCode: familyCode },
+        include: {
+          members: {
+            select: {
+              id: true,
+              name: true,
+              role: true,
+              points: true
+            },
+            orderBy: [
+              { role: 'desc' }, // PARENT/FAMILY_ADMIN сначала
+              { name: 'asc' }
+            ]
+          }
+        }
+      });
 
-    console.log(`✅ Найдено пользователей: ${users.length}`);
-    
-    return NextResponse.json(users);
+      if (!family) {
+        console.log("❌ Семья не найдена");
+        return NextResponse.json(
+          { error: "Неверный код семьи" }, 
+          { status: 404 }
+        );
+      }
+
+      console.log(`✅ Найдена семья: ${family.name}, участников: ${family.members.length}`);
+      
+      return NextResponse.json({
+        familyName: family.name,
+        users: family.members
+      });
+    } else {
+      // Старая логика для обратной совместимости - возвращаем всех пользователей
+      const users = await prisma.user.findMany({
+        select: {
+          id: true,
+          name: true,
+          role: true,
+          points: true
+        },
+        orderBy: [
+          { role: 'desc' }, // PARENT сначала
+          { name: 'asc' }
+        ]
+      });
+
+      console.log(`✅ Найдено пользователей: ${users.length}`);
+      
+      return NextResponse.json(users);
+    }
 
   } catch (error) {
     console.error("❌ Ошибка получения пользователей:", error);

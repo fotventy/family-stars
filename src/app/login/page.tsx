@@ -14,6 +14,9 @@ interface User {
 }
 
 export default function Login() {
+  const [step, setStep] = useState(1); // 1 - ввод кода семьи, 2 - выбор пользователя, 3 - ввод пароля
+  const [familyCode, setFamilyCode] = useState("");
+  const [familyName, setFamilyName] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -21,17 +24,22 @@ export default function Login() {
   const [users, setUsers] = useState<User[]>([]);
   const router = useRouter();
 
-  useEffect(() => {
-    fetchUsers();
-  }, []);
+  // Удаляем автоматическую загрузку пользователей
+  // useEffect(() => {
+  //   fetchUsers();
+  // }, []);
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (inviteCode: string) => {
     try {
-      const response = await fetch('/api/login-users');
+      const response = await fetch(`/api/login-users?familyCode=${encodeURIComponent(inviteCode)}`);
       const data = await response.json();
       
+      if (!response.ok) {
+        throw new Error(data.error || 'Ошибка загрузки пользователей');
+      }
+      
       // Преобразуем пользователей из БД в формат для страницы логина
-      const formattedUsers = data.map((user: any) => ({
+      const formattedUsers = data.users.map((user: any) => ({
         id: user.id,
         name: user.name,
         role: user.role,
@@ -41,8 +49,11 @@ export default function Login() {
       }));
       
       setUsers(formattedUsers);
-    } catch (error) {
+      setFamilyName(data.familyName);
+      setStep(2);
+    } catch (error: any) {
       console.error('Ошибка загрузки пользователей:', error);
+      setError(error.message || 'Ошибка загрузки пользователей');
     }
   };
 
@@ -72,16 +83,51 @@ export default function Login() {
     return childColors[index];
   };
 
+  const handleFamilyCodeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!familyCode.trim()) {
+      setError("Введите код семьи");
+      return;
+    }
+
+    setError("");
+    setLoading(true);
+
+    try {
+      await fetchUsers(familyCode.trim());
+    } catch (error) {
+      // Ошибка уже обработана в fetchUsers
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleUserClick = (user: User) => {
     setSelectedUser(user);
     setPassword("");
     setError("");
+    setStep(3);
+  };
+
+  const handleBack = () => {
+    if (step === 3) {
+      setStep(2);
+      setSelectedUser(null);
+      setPassword("");
+      setError("");
+    } else if (step === 2) {
+      setStep(1);
+      setUsers([]);
+      setFamilyName("");
+      setError("");
+    }
   };
 
   const handleModalClose = () => {
     setSelectedUser(null);
     setPassword("");
     setError("");
+    setStep(2);
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -436,6 +482,9 @@ export default function Login() {
           font-weight: 500;
           transition: all 0.3s ease;
           box-sizing: border-box;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+          text-align: center;
         }
 
         .form-input::placeholder {
@@ -591,42 +640,118 @@ export default function Login() {
 
       <div className="premium-login-container">
         <div className="login-card">
-          <div className="login-header">
-            <div className="login-emoji">⭐</div>
-            <h1 className="login-title fortnite-title">Семейные Звёзды</h1>
-            <p className="login-subtitle">
-              Выберите пользователя для входа
-            </p>
-          </div>
-
-          <div className="users-grid">
-            {users.map((user) => (
-              <div
-                key={user.name}
-                className="user-card"
-                onClick={() => handleUserClick(user)}
-              >
-                <div className="user-emoji">{user.emoji}</div>
-                <div className="user-name fortnite-text">{user.displayName}</div>
-                <div className="user-role">
-                  {user.role === "PARENT" ? "Родитель" : "Ребёнок"}
-                </div>
+          {/* ШАГ 1: ВВОД КОДА СЕМЬИ */}
+          {step === 1 && (
+            <>
+              <div className="login-header">
+                <div className="login-emoji">🏠</div>
+                <h1 className="login-title fortnite-title">Вход в семью</h1>
+                <p className="login-subtitle">
+                  Введите код вашей семьи
+                </p>
               </div>
-            ))}
-          </div>
 
-          <div style={{ textAlign: 'center', position: 'relative', zIndex: 1 }}>
-            <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px', marginBottom: '8px' }}>
-              ✨ Родители управляют заданиями и подарками
-            </p>
-            <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px' }}>
-              🌟 Дети выполняют задания и зарабатывают звёзды
-            </p>
-          </div>
+              <form onSubmit={handleFamilyCodeSubmit}>
+                {error && (
+                  <div className="error-message">
+                    ❌ {error}
+                  </div>
+                )}
+
+                <div className="form-group">
+                  <label htmlFor="familyCode" className="form-label">
+                    🔑 Код семьи
+                  </label>
+                  <input
+                    id="familyCode"
+                    type="text"
+                    value={familyCode}
+                    onChange={(e) => setFamilyCode(e.target.value)}
+                    className="form-input"
+                    placeholder="Введите код семьи"
+                    required
+                    autoFocus
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="login-button"
+                >
+                  {loading ? '⏳ Поиск...' : '🔍 Найти семью'}
+                </button>
+              </form>
+
+              <div style={{ textAlign: 'center', marginTop: '24px', position: 'relative', zIndex: 1 }}>
+                <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px', marginBottom: '8px' }}>
+                  💡 Код семьи можно получить у администратора семьи
+                </p>
+                <button
+                  onClick={() => window.location.href = '/'}
+                  style={{ 
+                    background: 'none', 
+                    border: 'none', 
+                    color: 'rgba(255, 255, 255, 0.7)', 
+                    fontSize: '14px', 
+                    cursor: 'pointer',
+                    textDecoration: 'underline'
+                  }}
+                >
+                  ← Вернуться на главную
+                </button>
+              </div>
+            </>
+          )}
+
+          {/* ШАГ 2: ВЫБОР ПОЛЬЗОВАТЕЛЯ */}
+          {step === 2 && (
+            <>
+              <div className="login-header">
+                <div className="login-emoji">⭐</div>
+                <h1 className="login-title fortnite-title">{familyName}</h1>
+                <p className="login-subtitle">
+                  Выберите пользователя для входа
+                </p>
+              </div>
+
+              <div className="users-grid">
+                {users.map((user) => (
+                  <div
+                    key={user.name}
+                    className="user-card"
+                    onClick={() => handleUserClick(user)}
+                  >
+                    <div className="user-emoji">{user.emoji}</div>
+                    <div className="user-name fortnite-text">{user.displayName}</div>
+                    <div className="user-role">
+                      {user.role === "PARENT" || user.role === "FAMILY_ADMIN" ? "Родитель" : "Ребёнок"}
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ textAlign: 'center', position: 'relative', zIndex: 1, marginTop: '24px' }}>
+                <button
+                  onClick={handleBack}
+                  style={{ 
+                    background: 'none', 
+                    border: 'none', 
+                    color: 'rgba(255, 255, 255, 0.7)', 
+                    fontSize: '14px', 
+                    cursor: 'pointer',
+                    textDecoration: 'underline'
+                  }}
+                >
+                  ← Изменить код семьи
+                </button>
+              </div>
+            </>
+          )}
         </div>
 
-        {/* МОДАЛЬНОЕ ОКНО ВХОДА */}
-        {selectedUser && (
+        {/* ШАГ 3: ВВОД ПАРОЛЯ */}
+        {step === 3 && selectedUser && (
           <div className="modal-overlay" onClick={handleModalClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <button className="close-button" onClick={handleModalClose}>
@@ -637,7 +762,7 @@ export default function Login() {
                 <div className="modal-user-emoji">{selectedUser.emoji}</div>
                 <div className="modal-user-name fortnite-text">{selectedUser.displayName}</div>
                 <div className="modal-user-role">
-                  {selectedUser.role === "PARENT" ? "Родитель" : "Ребёнок"}
+                  {selectedUser.role === "PARENT" || selectedUser.role === "FAMILY_ADMIN" ? "Родитель" : "Ребёнок"}
                 </div>
               </div>
 
@@ -645,27 +770,27 @@ export default function Login() {
                 {error && (
                   <div className="error-message">
                     ❌ {error}
-            </div>
+                  </div>
                 )}
 
                 <div className="form-group">
                   <label htmlFor="password" className="form-label">
                     🔑 Пароль
-              </label>
-              <input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                  </label>
+                  <input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="form-input"
                     placeholder="Введите пароль"
                     required
                     autoFocus
-              />
-            </div>
+                  />
+                </div>
 
-            <button
-              type="submit"
+                <button
+                  type="submit"
                   disabled={loading}
                   className="login-button game-button"
                 >
@@ -679,7 +804,7 @@ export default function Login() {
                   disabled={loading}
                 >
                   ⚡ Быстрый вход (тест)
-            </button>
+                </button>
               </form>
             </div>
           </div>
