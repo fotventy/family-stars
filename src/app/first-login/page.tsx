@@ -6,66 +6,33 @@ import { signIn } from "next-auth/react";
 
 export default function FirstLogin() {
   const [token, setToken] = useState("");
-  const [username, setUsername] = useState("");
-  const [tempPassword, setTempPassword] = useState("");
+  const [userName, setUserName] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [step, setStep] = useState(1); // 1 - ввод временного пароля, 2 - смена пароля
+  const [success, setSuccess] = useState("");
   
   const router = useRouter();
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    const tokenParam = searchParams.get('token');
-    const userParam = searchParams.get('user');
+    const tokenParam = searchParams.get("token");
+    const userParam = searchParams.get("user");
     
-    if (tokenParam) setToken(tokenParam);
-    if (userParam) setUsername(decodeURIComponent(userParam));
+    if (tokenParam && userParam) {
+      setToken(tokenParam);
+      setUserName(decodeURIComponent(userParam));
+    } else {
+      setError("Неверная ссылка. Токен или имя пользователя не найдены.");
+    }
   }, [searchParams]);
 
-  const handleTempPasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!tempPassword) {
-      setError("Введите временный пароль");
-      return;
-    }
-
-    setError("");
-    setLoading(true);
-
-    try {
-      // Сначала проверяем временный пароль
-      const result = await signIn("credentials", {
-        username,
-        password: tempPassword,
-        redirect: false
-      });
-
-      if (result?.error) {
-        setError("Неверный временный пароль");
-        setLoading(false);
-        return;
-      }
-
-      // Если временный пароль правильный, переходим к смене пароля
-      setStep(2);
-      setLoading(false);
-      
-    } catch (error) {
-      console.error("Ошибка входа:", error);
-      setError("Ошибка при входе");
-      setLoading(false);
-    }
-  };
-
-  const handlePasswordChange = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!newPassword || !confirmPassword) {
-      setError("Заполните все поля");
+      setError("Пожалуйста, заполните все поля");
       return;
     }
 
@@ -74,8 +41,8 @@ export default function FirstLogin() {
       return;
     }
 
-    if (newPassword.length < 4) {
-      setError("Пароль должен содержать минимум 4 символа");
+    if (newPassword.length < 6) {
+      setError("Пароль должен содержать минимум 6 символов");
       return;
     }
 
@@ -83,12 +50,13 @@ export default function FirstLogin() {
     setLoading(true);
 
     try {
-      // Обновляем пароль пользователя
+      // Отправляем запрос на смену пароля
       const response = await fetch("/api/change-password-by-token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           token,
+          userName,
           newPassword
         })
       });
@@ -99,28 +67,46 @@ export default function FirstLogin() {
         throw new Error(data.error || "Ошибка смены пароля");
       }
 
-      // Автоматически логинимся с новым паролем
+      setSuccess("Пароль успешно изменён! Выполняется вход...");
+      
+      // Автоматически входим в систему с новым паролем
       const signInResult = await signIn("credentials", {
-        username,
+        name: userName,
         password: newPassword,
         redirect: false
       });
 
       if (signInResult?.error) {
-        setError("Ошибка входа с новым паролем");
-        setLoading(false);
-        return;
+        setError("Ошибка автоматического входа. Попробуйте войти вручную на странице входа.");
+        setTimeout(() => router.push("/login"), 3000);
+      } else {
+        // Перенаправляем на соответствующую страницу
+        router.push("/parent");
       }
-
-      // Перенаправляем на dashboard
-      router.push("/dashboard");
       
     } catch (error) {
-      console.error("Ошибка смены пароля:", error);
       setError(error instanceof Error ? error.message : "Ошибка смены пароля");
+    } finally {
       setLoading(false);
     }
   };
+
+  if (!token || !userName) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center p-6">
+        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">❌ Ошибка</h1>
+          <p className="text-gray-700 mb-6">{error || "Неверная ссылка для первого входа"}</p>
+          <button
+            onClick={() => router.push("/login")}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg"
+          >
+            Перейти к странице входа
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -149,7 +135,6 @@ export default function FirstLogin() {
           padding: 20px;
         }
 
-        /* 🌟 АНИМИРОВАННЫЙ ГРАДИЕНТНЫЙ ФОН */
         .premium-container::before {
           content: '';
           position: absolute;
@@ -192,7 +177,7 @@ export default function FirstLogin() {
           font-family: 'Fortnite Battlefest', 'Inter', sans-serif !important;
         }
 
-        .premium-subtitle {
+        .welcome-text {
           color: rgba(255, 255, 255, 0.9);
           font-size: 18px;
           text-align: center;
@@ -200,15 +185,10 @@ export default function FirstLogin() {
           text-shadow: 0 2px 8px rgba(0,0,0,0.2);
         }
 
-        .premium-form {
-          display: flex;
-          flex-direction: column;
-          gap: 24px;
-        }
-
         .form-group {
           display: flex;
           flex-direction: column;
+          margin-bottom: 24px;
         }
 
         .form-label {
@@ -235,12 +215,6 @@ export default function FirstLogin() {
           border-color: #FFD700;
           background: rgba(255, 255, 255, 0.95);
           box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
-        }
-
-        .form-input:disabled {
-          background: rgba(255, 255, 255, 0.6);
-          color: rgba(0, 0, 0, 0.6);
-          cursor: not-allowed;
         }
 
         .premium-button {
@@ -278,18 +252,6 @@ export default function FirstLogin() {
           box-shadow: none;
         }
 
-        .premium-button.success {
-          background: linear-gradient(135deg, #4CAF50, #45a049);
-          color: white;
-          box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
-        }
-
-        .premium-button.success:hover:not(:disabled) {
-          background: linear-gradient(135deg, #66BB6A, #4CAF50);
-          transform: translateY(-2px);
-          box-shadow: 0 12px 35px rgba(76, 175, 80, 0.6);
-        }
-
         .alert {
           padding: 20px;
           border-radius: 0;
@@ -304,69 +266,10 @@ export default function FirstLogin() {
           box-shadow: 0 8px 25px rgba(244, 67, 54, 0.3);
         }
 
-        .step-indicator {
-          display: flex;
-          justify-content: center;
-          margin-bottom: 32px;
-          gap: 16px;
-        }
-
-        .step {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: bold;
-          font-size: 18px;
-          transition: all 0.3s ease;
-        }
-
-        .step.active {
-          background: linear-gradient(135deg, #FFD700, #FFA500);
+        .alert.success {
+          background: rgba(76, 175, 80, 0.9);
           color: white;
-          box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
-        }
-
-        .step.completed {
-          background: linear-gradient(135deg, #4CAF50, #45a049);
-          color: white;
-          box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
-        }
-
-        .step.inactive {
-          background: rgba(255, 255, 255, 0.3);
-          color: rgba(255, 255, 255, 0.7);
-        }
-
-        /* 📱 МОБИЛЬНАЯ АДАПТАЦИЯ */
-        @media (max-width: 768px) {
-          .premium-container {
-            padding: 16px;
-          }
-
-          .premium-card {
-            padding: 24px;
-          }
-
-          .premium-title {
-            font-size: 28px;
-          }
-
-          .premium-subtitle {
-            font-size: 16px;
-          }
-
-          .form-input {
-            padding: 14px 16px;
-            font-size: 16px;
-          }
-
-          .premium-button {
-            padding: 14px 24px;
-            font-size: 16px;
-          }
+          box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
         }
       `}</style>
 
@@ -374,23 +277,11 @@ export default function FirstLogin() {
         <div className="premium-card">
           <div>
             <h1 className="premium-title">
-              🌟 Первый вход
+              🔐 Первый вход
             </h1>
-            
-            <div className="step-indicator">
-              <div className={`step ${step === 1 ? 'active' : step > 1 ? 'completed' : 'inactive'}`}>
-                1
-              </div>
-              <div className={`step ${step === 2 ? 'active' : step > 2 ? 'completed' : 'inactive'}`}>
-                2
-              </div>
-            </div>
-            
-            <p className="premium-subtitle">
-              {step === 1 
-                ? `Добро пожаловать, ${username}! Введите временный пароль`
-                : "Установите новый пароль для входа"
-              }
+            <p className="welcome-text">
+              Добро пожаловать, <strong>{userName}</strong>!<br/>
+              Создайте новый пароль для входа в систему
             </p>
           </div>
 
@@ -400,85 +291,53 @@ export default function FirstLogin() {
             </div>
           )}
 
-          {step === 1 ? (
-            <form onSubmit={handleTempPasswordSubmit} className="premium-form">
-              <div className="form-group">
-                <label htmlFor="username" className="form-label">
-                  Имя пользователя
-                </label>
-                <input
-                  type="text"
-                  id="username"
-                  value={username}
-                  disabled
-                  className="form-input"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="tempPassword" className="form-label">
-                  Временный пароль
-                </label>
-                <input
-                  type="password"
-                  id="tempPassword"
-                  value={tempPassword}
-                  onChange={(e) => setTempPassword(e.target.value)}
-                  className="form-input"
-                  placeholder="Введите временный пароль"
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="premium-button primary"
-              >
-                {loading ? "Проверка..." : "Продолжить"}
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={handlePasswordChange} className="premium-form">
-              <div className="form-group">
-                <label htmlFor="newPassword" className="form-label">
-                  Новый пароль
-                </label>
-                <input
-                  type="password"
-                  id="newPassword"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="form-input"
-                  placeholder="Введите новый пароль"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="confirmPassword" className="form-label">
-                  Подтвердите пароль
-                </label>
-                <input
-                  type="password"
-                  id="confirmPassword"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="form-input"
-                  placeholder="Повторите новый пароль"
-                  required
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="premium-button success"
-              >
-                {loading ? "Сохранение..." : "Установить пароль"}
-              </button>
-            </form>
+          {success && (
+            <div className="alert success">
+              <p>{success}</p>
+            </div>
           )}
+
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="newPassword" className="form-label">
+                Новый пароль
+              </label>
+              <input
+                type="password"
+                id="newPassword"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="form-input"
+                placeholder="Введите новый пароль"
+                required
+                minLength={6}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="confirmPassword" className="form-label">
+                Подтвердите пароль
+              </label>
+              <input
+                type="password"
+                id="confirmPassword"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="form-input"
+                placeholder="Повторите новый пароль"
+                required
+                minLength={6}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="premium-button primary"
+            >
+              {loading ? "Смена пароля..." : "Сменить пароль и войти"}
+            </button>
+          </form>
         </div>
       </div>
     </>

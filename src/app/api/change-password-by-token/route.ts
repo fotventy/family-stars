@@ -6,32 +6,34 @@ const prisma = new PrismaClient();
 
 export async function POST(request: Request) {
   try {
-    const { token, newPassword } = await request.json();
+    const { token, userName, newPassword } = await request.json();
 
-    if (!token || !newPassword) {
+    if (!token || !userName || !newPassword) {
       return NextResponse.json(
-        { error: "Токен и новый пароль обязательны" }, 
+        { error: "Токен, имя пользователя и новый пароль обязательны" }, 
         { status: 400 }
       );
     }
 
-    if (newPassword.length < 4) {
+    if (newPassword.length < 6) {
       return NextResponse.json(
-        { error: "Пароль должен содержать минимум 4 символа" }, 
+        { error: "Пароль должен содержать минимум 6 символов" }, 
         { status: 400 }
       );
     }
 
-    // Находим пользователя по токену первого входа
+    // Ищем пользователя по токену и имени
     const user = await prisma.user.findFirst({
-      where: { 
-        tempPassword: token 
+      where: {
+        name: userName,
+        tempPassword: token,
+        mustChangePassword: true
       }
     });
 
     if (!user) {
       return NextResponse.json(
-        { error: "Неверный токен" }, 
+        { error: "Неверный токен или пользователь не найден" }, 
         { status: 404 }
       );
     }
@@ -39,26 +41,31 @@ export async function POST(request: Request) {
     // Хешируем новый пароль
     const hashedPassword = await hash(newPassword, 10);
 
-    // Обновляем пользователя
+    // Обновляем пароль и убираем флаги для смены пароля
     await prisma.user.update({
       where: { id: user.id },
       data: {
         password: hashedPassword,
-        tempPassword: null, // убираем токен первого входа
-        mustChangePassword: false, // снимаем флаг обязательной смены
+        tempPassword: null,
+        mustChangePassword: false,
         isEmailVerified: true
       }
     });
 
-    console.log(`✅ Пароль изменен для пользователя: ${user.name}`);
+    console.log(`✅ Пароль изменён для пользователя: ${user.name} (${user.role})`);
 
     return NextResponse.json({
       success: true,
-      message: "Пароль успешно изменен"
+      message: "Пароль успешно изменён",
+      user: {
+        id: user.id,
+        name: user.name,
+        role: user.role
+      }
     });
 
   } catch (error) {
-    console.error("❌ Ошибка смены пароля:", error);
+    console.error("❌ Ошибка смены пароля по токену:", error);
     return NextResponse.json(
       { 
         error: "Ошибка смены пароля",

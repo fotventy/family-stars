@@ -42,9 +42,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // Генерируем временный пароль
+    // Генерируем временный пароль и токен для первого входа
     const tempPassword = generateTempPassword();
     const hashedPassword = await hash(tempPassword, 10);
+    const firstLoginToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     const inviteCode = generateInviteCode();
 
     // Создаем первого родителя как администратора семьи
@@ -53,6 +54,7 @@ export async function POST(request: Request) {
         name: parentName,
         email,
         password: hashedPassword,
+        tempPassword: firstLoginToken,
         role: "FAMILY_ADMIN",
         points: 0,
         mustChangePassword: true,
@@ -77,15 +79,17 @@ export async function POST(request: Request) {
 
     console.log(`✅ Создана семья: ${familyName} с ${parentType} ${parentName} (${email})`);
 
-    // В реальном приложении здесь бы отправляли email
-    // Пока просто возвращаем временный пароль
+    // Генерируем ссылку для первого входа
+    const baseUrl = process.env.NEXTAUTH_URL || 'https://family-stars.vercel.app';
+    const firstLoginUrl = `${baseUrl}/first-login?token=${firstLoginToken}&user=${encodeURIComponent(parentName)}`;
+
     return NextResponse.json({
       success: true,
       message: `Семья "${familyName}" успешно создана!`,
       parentName,
       parentType,
-      tempPassword, // В production убрать и отправить по email
-      loginUrl: `${process.env.NEXTAUTH_URL || 'https://family-stars.vercel.app'}/login`,
+      firstLoginUrl,
+      loginUrl: `${baseUrl}/login`,
       familyCode: inviteCode
     });
 
