@@ -64,6 +64,11 @@ export async function POST() {
 
     console.log(`🏠 Создаём семью: ${familyName} с кодом ${inviteCode}`);
 
+    // Проверяем что adminUser определён
+    if (!adminUser) {
+      throw new Error("Не удалось определить администратора семьи");
+    }
+
     // Создаём семью
     const family = await prisma.family.create({
       data: {
@@ -122,9 +127,9 @@ export async function POST() {
         familyName,
         inviteCode,
         adminUser: {
-          id: adminUser.id,
-          name: adminUser.name,
-          role: adminUser.role
+          id: adminUser!.id,
+          name: adminUser!.name,
+          role: adminUser!.role
         },
         members: updatedFamily?.members || []
       }
