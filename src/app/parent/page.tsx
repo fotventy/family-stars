@@ -10,7 +10,7 @@ import { TaskManagementModal } from "@/components/TaskManagementModal";
 import { StatisticsChart } from "@/components/StatisticsChart";
 import { ProfileModal } from "@/components/ProfileModal";
 import { DragDropList } from "@/components/DragDropList";
-import { FamilyManagementModal } from "@/components/FamilyManagementModal";
+import FamilyManagementModal from "@/components/FamilyManagementModal";
 
 interface User {
   id: string;
