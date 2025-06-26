@@ -10,6 +10,7 @@ import { TaskManagementModal } from "@/components/TaskManagementModal";
 import { StatisticsChart } from "@/components/StatisticsChart";
 import { ProfileModal } from "@/components/ProfileModal";
 import { DragDropList } from "@/components/DragDropList";
+import { FamilyManagementModal } from "@/components/FamilyManagementModal";
 
 interface User {
   id: string;
@@ -58,6 +59,7 @@ export default function ParentDashboard() {
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
   const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isFamilyModalOpen, setIsFamilyModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [editingGift, setEditingGift] = useState<Gift | null>(null);
   const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -1160,8 +1162,8 @@ export default function ParentDashboard() {
               className={`tab-button ${activeTab === "users" ? "active" : ""} fortnite-text`}
               onClick={() => setActiveTab("users")}
             >
-              <span>👥</span>
-              Дети
+              <span>👨‍👩‍👧‍👦</span>
+              Семья
             </button>
             <button
               className={`tab-button ${activeTab === "orders" ? "active" : ""} fortnite-text`}
@@ -1233,20 +1235,20 @@ export default function ParentDashboard() {
             </div>
           )}
 
-          {/* 👥 ДЕТИ */}
+          {/* 👨‍👩‍👧‍👦 СЕМЬЯ */}
           {activeTab === "users" && (
             <div className="content-section fade-in-up">
               <div className="section-header">
                 <h2 className="section-title fortnite-title">
-                  <span>👥</span>
-                  Управление детьми
+                  <span>👨‍👩‍👧‍👦</span>
+                  Управление семьёй
                 </h2>
                 <button 
-                  onClick={() => setIsUserModalOpen(true)}
+                  onClick={() => setIsFamilyModalOpen(true)}
                   className="premium-button add"
                 >
-                  <span>➕</span>
-                  Добавить ребёнка
+                  <span>👥</span>
+                  Управление семьёй
                 </button>
               </div>
 
@@ -1280,9 +1282,9 @@ export default function ParentDashboard() {
       ))}
                 {users.filter(user => user.role === 'CHILD').length === 0 && (
                   <div className="empty-state">
-                    <div className="empty-emoji">👶</div>
-                    <h3 className="empty-title">Пока нет детских аккаунтов</h3>
-                    <p className="empty-description">Создайте аккаунты для ваших детей</p>
+                    <div className="empty-emoji">👨‍👩‍👧‍👦</div>
+                    <h3 className="empty-title">Добро пожаловать в семейную систему!</h3>
+                    <p className="empty-description">Нажмите "Управление семьёй" для настройки семьи</p>
                   </div>
                 )}
               </div>
@@ -1428,7 +1430,7 @@ export default function ParentDashboard() {
                   <div className="empty-state">
                     <div className="empty-emoji">🛒</div>
                     <h3 className="empty-title">Пока нет выборов</h3>
-                    <p className="empty-description">Дети ещё не выбирали подарки</p>
+                    <p className="empty-description">Члены семьи ещё не выбирали подарки</p>
                   </div>
                 )}
               </div>
@@ -1486,6 +1488,11 @@ export default function ParentDashboard() {
         onUpdateGift={updateGift}
         onDeleteGift={deleteGift}
       />
+
+        <FamilyManagementModal 
+          isOpen={isFamilyModalOpen}
+          onClose={() => setIsFamilyModalOpen(false)}
+        />
 
         <ProfileModal 
           isOpen={isProfileModalOpen}
