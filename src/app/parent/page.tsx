@@ -81,9 +81,16 @@ export default function ParentDashboard() {
     try {
       const response = await fetch("/api/users");
       const data = await response.json();
-      setUsers(data);
+      
+      if (response.ok && Array.isArray(data)) {
+        setUsers(data);
+      } else {
+        console.error("Ошибка API /api/users:", data);
+        setUsers([]); // Устанавливаем пустой массив при ошибке
+      }
     } catch (error) {
       console.error("Ошибка при загрузке пользователей:", error);
+      setUsers([]); // Устанавливаем пустой массив при ошибке
     }
   };
 
@@ -91,9 +98,16 @@ export default function ParentDashboard() {
     try {
       const response = await fetch("/api/tasks");
       const data = await response.json();
-      setTasks(data);
+      
+      if (response.ok && Array.isArray(data)) {
+        setTasks(data);
+      } else {
+        console.error("Ошибка API /api/tasks:", data);
+        setTasks([]);
+      }
     } catch (error) {
       console.error("Ошибка при загрузке задач:", error);
+      setTasks([]);
     }
   };
 
@@ -101,9 +115,16 @@ export default function ParentDashboard() {
     try {
       const response = await fetch("/api/gifts");
       const data = await response.json();
-      setGifts(data);
+      
+      if (response.ok && Array.isArray(data)) {
+        setGifts(data);
+      } else {
+        console.error("Ошибка API /api/gifts:", data);
+        setGifts([]);
+      }
     } catch (error) {
       console.error("Ошибка при загрузке подарков:", error);
+      setGifts([]);
     }
   };
 
@@ -111,9 +132,16 @@ export default function ParentDashboard() {
     try {
       const response = await fetch("/api/user-gifts");
       const data = await response.json();
-      setUserGifts(data);
+      
+      if (response.ok && Array.isArray(data)) {
+        setUserGifts(data);
+      } else {
+        console.error("Ошибка API /api/user-gifts:", data);
+        setUserGifts([]);
+      }
     } catch (error) {
       console.error("Ошибка при загрузке выборов подарков:", error);
+      setUserGifts([]);
     }
   };
 

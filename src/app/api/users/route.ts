@@ -10,7 +10,7 @@ export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session || (session as any).user.role !== "PARENT") {
+    if (!session || ((session as any).user.role !== "PARENT" && (session as any).user.role !== "FAMILY_ADMIN")) {
       return NextResponse.json(
         { error: "Недостаточно прав" }, 
         { status: 403 }
@@ -44,7 +44,7 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session || (session as any).user.role !== "PARENT") {
+    if (!session || ((session as any).user.role !== "PARENT" && (session as any).user.role !== "FAMILY_ADMIN")) {
       return NextResponse.json(
         { error: "Недостаточно прав" }, 
         { status: 403 }
@@ -102,7 +102,7 @@ export async function PUT(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session || (session as any).user.role !== "PARENT") {
+    if (!session || ((session as any).user.role !== "PARENT" && (session as any).user.role !== "FAMILY_ADMIN")) {
       return NextResponse.json(
         { error: "Недостаточно прав" }, 
         { status: 403 }
@@ -162,7 +162,7 @@ export async function DELETE(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session || (session as any).user.role !== "PARENT") {
+    if (!session || ((session as any).user.role !== "PARENT" && (session as any).user.role !== "FAMILY_ADMIN")) {
       return NextResponse.json(
         { error: "Недостаточно прав" }, 
         { status: 403 }
