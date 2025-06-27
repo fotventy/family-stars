@@ -30,6 +30,7 @@ interface StatisticsData {
 export const StatisticsChart: React.FC = () => {
   const [statisticsData, setStatisticsData] = useState<StatisticsData[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month'>('week');
+  const [chartType, setChartType] = useState<'bar' | 'histogram'>('bar');
 
   useEffect(() => {
     fetchStatistics();
@@ -39,9 +40,16 @@ export const StatisticsChart: React.FC = () => {
     try {
       const response = await fetch(`/api/statistics?period=${selectedPeriod}`);
       const data = await response.json();
-      setStatisticsData(data);
+      
+      if (response.ok && Array.isArray(data)) {
+        setStatisticsData(data);
+      } else {
+        console.error("Ошибка API /api/statistics:", data);
+        setStatisticsData([]); // Устанавливаем пустой массив при ошибке
+      }
     } catch (error) {
       console.error("Ошибка при загрузке статистики:", error);
+      setStatisticsData([]); // Устанавливаем пустой массив при ошибке
     }
   };
 
@@ -72,6 +80,35 @@ export const StatisticsChart: React.FC = () => {
     ]
   };
 
+  // Создаем гистограмму для распределения очков
+  const createHistogramData = () => {
+    const points = statisticsData.map(stat => stat.pointsEarned);
+    const maxPoints = Math.max(...points, 0);
+    const binSize = Math.max(10, Math.ceil(maxPoints / 10)); // Размер бина минимум 10
+    const numBins = Math.ceil(maxPoints / binSize) || 1;
+    
+    const bins = Array(numBins).fill(0);
+    const binLabels = Array(numBins).fill(0).map((_, i) => 
+      `${i * binSize}-${(i + 1) * binSize - 1}`
+    );
+    
+    points.forEach(point => {
+      const binIndex = Math.min(Math.floor(point / binSize), numBins - 1);
+      bins[binIndex]++;
+    });
+    
+    return {
+      labels: binLabels,
+      datasets: [{
+        label: 'Количество детей',
+        data: bins,
+        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 1
+      }]
+    };
+  };
+
   const chartOptions = {
     responsive: true,
     plugins: {
@@ -80,12 +117,24 @@ export const StatisticsChart: React.FC = () => {
       },
       title: {
         display: true,
-        text: `Статистика за ${selectedPeriod === 'week' ? 'неделю' : 'месяц'}`
+        text: chartType === 'bar' 
+          ? `Статистика за ${selectedPeriod === 'week' ? 'неделю' : 'месяц'}`
+          : `Распределение очков за ${selectedPeriod === 'week' ? 'неделю' : 'месяц'}`
       }
     },
     scales: {
       y: {
-        beginAtZero: true
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: chartType === 'bar' ? 'Значения' : 'Количество детей'
+        }
+      },
+      x: {
+        title: {
+          display: chartType === 'histogram',
+          text: 'Диапазон очков'
+        }
       }
     }
   };
@@ -94,34 +143,66 @@ export const StatisticsChart: React.FC = () => {
     <div className="bg-fortnite-accent p-4 rounded-lg">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-fortnite text-white">Статистика</h2>
-        <div>
-          <button 
-            onClick={() => setSelectedPeriod('week')}
-            className={`
-              mr-2 px-4 py-2 rounded-lg transition-colors
-              ${selectedPeriod === 'week' 
-                ? 'bg-fortnite-primary text-white' 
-                : 'text-gray-400 hover:bg-fortnite-background'}
-            `}
-          >
-            Неделя
-          </button>
-          <button 
-            onClick={() => setSelectedPeriod('month')}
-            className={`
-              px-4 py-2 rounded-lg transition-colors
-              ${selectedPeriod === 'month' 
-                ? 'bg-fortnite-primary text-white' 
-                : 'text-gray-400 hover:bg-fortnite-background'}
-            `}
-          >
-            Месяц
-          </button>
+        <div className="flex gap-2">
+          {/* Переключатель периода */}
+          <div>
+            <button 
+              onClick={() => setSelectedPeriod('week')}
+              className={`
+                mr-2 px-4 py-2 rounded-lg transition-colors
+                ${selectedPeriod === 'week' 
+                  ? 'bg-fortnite-primary text-white' 
+                  : 'text-gray-400 hover:bg-fortnite-background'}
+              `}
+            >
+              Неделя
+            </button>
+            <button 
+              onClick={() => setSelectedPeriod('month')}
+              className={`
+                px-4 py-2 rounded-lg transition-colors
+                ${selectedPeriod === 'month' 
+                  ? 'bg-fortnite-primary text-white' 
+                  : 'text-gray-400 hover:bg-fortnite-background'}
+              `}
+            >
+              Месяц
+            </button>
+          </div>
+          
+          {/* Переключатель типа графика */}
+          <div className="ml-4">
+            <button 
+              onClick={() => setChartType('bar')}
+              className={`
+                mr-2 px-4 py-2 rounded-lg transition-colors
+                ${chartType === 'bar' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'text-gray-400 hover:bg-fortnite-background'}
+              `}
+            >
+              График
+            </button>
+            <button 
+              onClick={() => setChartType('histogram')}
+              className={`
+                px-4 py-2 rounded-lg transition-colors
+                ${chartType === 'histogram' 
+                  ? 'bg-blue-600 text-white' 
+                  : 'text-gray-400 hover:bg-fortnite-background'}
+              `}
+            >
+              Гистограмма
+            </button>
+          </div>
         </div>
       </div>
       
       {statisticsData.length > 0 ? (
-        <Bar data={chartData} options={chartOptions} />
+        <Bar 
+          data={chartType === 'bar' ? chartData : createHistogramData()} 
+          options={chartOptions} 
+        />
       ) : (
         <div className="text-center text-gray-400">
           Нет данных для отображения
