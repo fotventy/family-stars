@@ -32,6 +32,7 @@ model User {
   name      String   @unique
   password  String
   role      String   @default("CHILD") // PARENT, CHILD, FAMILY_ADMIN
+  gender    String?  // "папа", "мама", "сын", "дочь"
   points    Int      @default(0)
   parentId  String?
   parent    User?    @relation("FamilyRelation", fields: [parentId], references: [id])

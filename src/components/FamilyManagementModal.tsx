@@ -7,6 +7,7 @@ interface FamilyMember {
   id: string;
   name: string;
   role: string;
+  gender?: string;
   points: number;
   email?: string;
   mustChangePassword: boolean;
@@ -35,6 +36,7 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [newMemberName, setNewMemberName] = useState("");
   const [newMemberRole, setNewMemberRole] = useState("CHILD");
+  const [newMemberGender, setNewMemberGender] = useState("сын");
   const [addingMember, setAddingMember] = useState(false);
   const [newMemberResult, setNewMemberResult] = useState<any>(null);
 
@@ -67,7 +69,7 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!newMemberName || !newMemberRole) {
+    if (!newMemberName || !newMemberRole || !newMemberGender) {
       setError("Заполните все поля");
       return;
     }
@@ -82,7 +84,8 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: newMemberName,
-          role: newMemberRole
+          role: newMemberRole,
+          gender: newMemberGender
         })
       });
 
@@ -96,6 +99,7 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
       setNewMemberResult(data.member);
       setNewMemberName("");
       setNewMemberRole("CHILD");
+      setNewMemberGender("сын");
       setShowAddForm(false);
       
       // Перезагружаем семью
@@ -114,11 +118,14 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
     setTimeout(() => setSuccess(""), 3000);
   };
 
-  const getRoleDisplay = (role: string) => {
+  const getRoleDisplay = (role: string, gender?: string) => {
     switch (role) {
-      case "FAMILY_ADMIN": return "👑 Админ семьи";
-      case "PARENT": return "👨‍👩‍👧‍👦 Родитель";
-      case "CHILD": return "👶 Ребенок";
+      case "FAMILY_ADMIN": 
+        return gender === "мама" ? "👑👩 Мама-админ" : "👑👨 Папа-админ";
+      case "PARENT": 
+        return gender === "мама" ? "👩 Мама" : "👨 Папа";
+      case "CHILD": 
+        return gender === "дочь" ? "👧 Дочь" : "👦 Сын";
       default: return role;
     }
   };
@@ -697,11 +704,42 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
                     </label>
                     <select
                       value={newMemberRole}
-                      onChange={(e) => setNewMemberRole(e.target.value)}
+                      onChange={(e) => {
+                        setNewMemberRole(e.target.value);
+                        // Автоматически устанавливаем пол по умолчанию
+                        if (e.target.value === "PARENT") {
+                          setNewMemberGender("папа");
+                        } else {
+                          setNewMemberGender("сын");
+                        }
+                      }}
                       className="form-select"
                     >
                       <option value="CHILD">👶 Ребенок</option>
                       <option value="PARENT">👨‍👩‍👧‍👦 Родитель</option>
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">
+                      Пол
+                    </label>
+                    <select
+                      value={newMemberGender}
+                      onChange={(e) => setNewMemberGender(e.target.value)}
+                      className="form-select"
+                    >
+                      {newMemberRole === "PARENT" ? (
+                        <>
+                          <option value="папа">👨 Папа</option>
+                          <option value="мама">👩 Мама</option>
+                        </>
+                      ) : (
+                        <>
+                          <option value="сын">👦 Сын</option>
+                          <option value="дочь">👧 Дочь</option>
+                        </>
+                      )}
                     </select>
                   </div>
 
@@ -738,7 +776,7 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
                         {member.name}
                       </span>
                       <span className="member-role">
-                        {getRoleDisplay(member.role)}
+                        {getRoleDisplay(member.role, member.gender)}
                       </span>
                       {member.mustChangePassword && (
                         <span className="password-badge">

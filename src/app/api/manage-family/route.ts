@@ -36,6 +36,7 @@ export async function GET(request: Request) {
                 id: true,
                 name: true,
                 role: true,
+                gender: true,
                 points: true,
                 email: true,
                 mustChangePassword: true,
@@ -51,6 +52,7 @@ export async function GET(request: Request) {
                 id: true,
                 name: true,
                 role: true,
+                gender: true,
                 points: true,
                 email: true,
                 mustChangePassword: true,
@@ -117,11 +119,11 @@ export async function POST(request: Request) {
     }
 
     const userId = (session as any).user.id;
-    const { name, role } = await request.json();
+    const { name, role, gender } = await request.json();
 
-    if (!name || !role) {
+    if (!name || !role || !gender) {
       return NextResponse.json(
-        { error: "Имя и роль обязательны" }, 
+        { error: "Имя, роль и пол обязательны" }, 
         { status: 400 }
       );
     }
@@ -166,6 +168,7 @@ export async function POST(request: Request) {
         password: hashedTempPassword,
         tempPassword: firstLoginToken,
         role,
+        gender,
         familyId: admin.adminFamily.id,
         points: role === 'CHILD' ? 10 : 0,
         mustChangePassword: true,
@@ -185,6 +188,7 @@ export async function POST(request: Request) {
         id: newMember.id,
         name: newMember.name,
         role: newMember.role,
+        gender: newMember.gender,
         points: newMember.points,
         tempPassword,
         firstLoginUrl
