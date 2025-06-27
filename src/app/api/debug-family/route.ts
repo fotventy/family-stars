@@ -7,92 +7,58 @@ const prisma = new PrismaClient();
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
+    console.log("🔍 Получаем все семьи для отладки...");
     
-    // Проверяем общую информацию
-    const userCount = await prisma.user.count();
-    const familyCount = await prisma.family.count();
-    
-    // Получаем всех пользователей с их семьями
-    const allUsers = await prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        role: true,
-        email: true,
-        familyId: true,
-        mustChangePassword: true
-      }
-    });
-    
-    // Получаем все семьи
-    const allFamilies = await prisma.family.findMany({
+    const families = await prisma.family.findMany({
       include: {
-        members: {
-          select: {
-            id: true,
-            name: true,
-            role: true
-          }
-        },
         admin: {
           select: {
             id: true,
             name: true,
+            email: true,
             role: true
           }
+        },
+        members: {
+          select: {
+            id: true,
+            name: true,
+            role: true,
+            points: true
+          }
         }
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
     });
 
-    // Информация о текущем пользователе если есть сессия
-    let currentUserInfo = null;
-    if (session) {
-      const userId = (session as any).user.id;
-      currentUserInfo = await prisma.user.findUnique({
-        where: { id: userId },
-        include: {
-          family: true,
-          adminFamily: true
-        }
-      });
-    }
+    console.log(`📊 Найдено семей: ${families.length}`);
 
-    // Проверим структуру таблицы User
-    const userTableInfo = await prisma.$queryRaw`
-      SELECT column_name, data_type, is_nullable 
-      FROM information_schema.columns 
-      WHERE table_name = 'User' 
-      ORDER BY ordinal_position;
-    `;
+    const familiesInfo = families.map(family => ({
+      id: family.id,
+      name: family.name,
+      inviteCode: family.inviteCode,
+      admin: family.admin,
+      membersCount: family.members.length,
+      members: family.members,
+      createdAt: family.createdAt
+    }));
 
     return NextResponse.json({
-      success: true,
-      session: session ? {
-        user: (session as any).user,
-        expires: (session as any).expires
-      } : null,
-      database: {
-        userCount,
-        familyCount,
-        users: allUsers,
-        families: allFamilies,
-        currentUser: currentUserInfo,
-        userTableColumns: userTableInfo
-      },
-      debug: {
-        message: "Отладочная информация о семейной системе"
-      }
+      count: families.length,
+      families: familiesInfo
     });
 
   } catch (error) {
-    console.error("❌ Ошибка отладки семьи:", error);
-    return NextResponse.json({
-      success: false,
-      error: "Ошибка получения отладочной информации",
-      details: error instanceof Error ? error.message : String(error)
-    }, { status: 500 });
-
+    console.error("❌ Ошибка получения семей:", error);
+    return NextResponse.json(
+      { 
+        error: "Ошибка получения семей",
+        details: error instanceof Error ? error.message : String(error)
+      }, 
+      { status: 500 }
+    );
   } finally {
     await prisma.$disconnect();
   }

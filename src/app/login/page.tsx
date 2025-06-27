@@ -679,13 +679,13 @@ export default function Login() {
                   disabled={loading}
                   className="login-button"
                 >
-                  {loading ? '⏳ Поиск...' : '🔍 Найти семью'}
+                  {loading ? '⏳ Вход...' : '🏠 Войти в семью'}
                 </button>
               </form>
 
               <div style={{ textAlign: 'center', marginTop: '24px', position: 'relative', zIndex: 1 }}>
                 <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px', marginBottom: '8px' }}>
-                  💡 Код семьи можно получить у администратора семьи
+                  💡 Введите код семьи для входа. Код можно получить у администратора семьи
                 </p>
                 <button
                   onClick={() => window.location.href = '/'}
