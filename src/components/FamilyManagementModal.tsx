@@ -129,42 +129,494 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="🏠 Управление семьей">
-      <div className="space-y-6">
+      <style jsx>{`
+        .premium-family-content {
+          color: white;
+        }
+
+        .premium-alert {
+          padding: 16px 20px;
+          border-radius: 0;
+          margin-bottom: 20px;
+          backdrop-filter: blur(10px);
+          border: none;
+          font-weight: 600;
+          text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .premium-alert.error {
+          background: rgba(244, 67, 54, 0.9);
+          color: white;
+          box-shadow: 0 8px 25px rgba(244, 67, 54, 0.3);
+        }
+
+        .premium-alert.success {
+          background: rgba(76, 175, 80, 0.9);
+          color: white;
+          box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+        }
+
+        .premium-loading {
+          text-align: center;
+          padding: 40px 20px;
+          color: white;
+        }
+
+        .loading-spinner {
+          width: 40px;
+          height: 40px;
+          border: 3px solid rgba(255, 255, 255, 0.3);
+          border-top: 3px solid #FFD700;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+          margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        .family-info-card {
+          background: rgba(102, 126, 234, 0.2);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(102, 126, 234, 0.3);
+          border-radius: 0;
+          padding: 24px;
+          margin-bottom: 24px;
+        }
+
+        .family-info-title {
+          color: white;
+          font-size: 18px;
+          font-weight: 700;
+          margin-bottom: 16px;
+          text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          font-family: 'Fortnite Battlefest', 'Inter', sans-serif !important;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+
+        .family-info-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 12px;
+          padding: 8px 0;
+        }
+
+        .family-info-label {
+          color: rgba(255, 255, 255, 0.9);
+          font-weight: 600;
+        }
+
+        .family-info-value {
+          color: white;
+          font-family: 'Monaco', 'Menlo', monospace;
+          background: rgba(255, 255, 255, 0.2);
+          padding: 8px 12px;
+          border-radius: 0;
+          font-weight: 600;
+          text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .copy-button {
+          background: linear-gradient(135deg, #FF6B35, #F7931E);
+          color: white;
+          border: none;
+          padding: 8px 12px;
+          border-radius: 0;
+          font-size: 12px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          margin-left: 8px;
+          font-family: 'Fortnite Battlefest', 'Inter', sans-serif !important;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .copy-button:hover {
+          background: linear-gradient(135deg, #FF8A65, #FFB74D);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(255, 107, 53, 0.6);
+        }
+
+        .member-result-card {
+          background: rgba(76, 175, 80, 0.2);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(76, 175, 80, 0.3);
+          border-radius: 0;
+          padding: 24px;
+          margin-bottom: 24px;
+        }
+
+        .member-result-title {
+          color: white;
+          font-size: 18px;
+          font-weight: 700;
+          margin-bottom: 16px;
+          text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .member-result-item {
+          display: flex;
+          align-items: center;
+          margin-bottom: 12px;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        .member-result-label {
+          color: rgba(255, 255, 255, 0.9);
+          font-weight: 600;
+          min-width: 120px;
+        }
+
+        .member-result-value {
+          color: white;
+          font-family: 'Monaco', 'Menlo', monospace;
+          background: rgba(255, 255, 255, 0.2);
+          padding: 8px 12px;
+          border-radius: 0;
+          font-weight: 600;
+          text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .hide-button {
+          background: rgba(255, 255, 255, 0.2);
+          color: white;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 0;
+          font-size: 12px;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          margin-top: 16px;
+        }
+
+        .hide-button:hover {
+          background: rgba(255, 255, 255, 0.3);
+        }
+
+        .add-member-button {
+          width: 100%;
+          background: linear-gradient(135deg, #28A745, #1E7E34);
+          color: white;
+          border: none;
+          padding: 16px 24px;
+          border-radius: 0;
+          font-size: 16px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          margin-bottom: 24px;
+          font-family: 'Fortnite Battlefest', 'Inter', sans-serif !important;
+        }
+
+        .add-member-button:hover {
+          background: linear-gradient(135deg, #34CE57, #28A745);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(40, 167, 69, 0.4);
+        }
+
+        .add-form-card {
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 0;
+          padding: 24px;
+          margin-bottom: 24px;
+        }
+
+        .add-form-title {
+          color: white;
+          font-size: 18px;
+          font-weight: 700;
+          margin-bottom: 20px;
+          text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          font-family: 'Fortnite Battlefest', 'Inter', sans-serif !important;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+
+        .form-group {
+          margin-bottom: 20px;
+        }
+
+        .form-label {
+          display: block;
+          color: white;
+          font-size: 14px;
+          font-weight: 600;
+          margin-bottom: 8px;
+          text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .form-input {
+          width: 100%;
+          padding: 14px 18px;
+          border: 2px solid rgba(255, 255, 255, 0.2);
+          border-radius: 0;
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(10px);
+          color: white;
+          font-size: 15px;
+          font-weight: 500;
+          transition: all 0.3s ease;
+          outline: none;
+        }
+
+        .form-input:focus {
+          border-color: #FFD700;
+          background: rgba(255, 255, 255, 0.15);
+          box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .form-input::placeholder {
+          color: rgba(255, 255, 255, 0.6);
+        }
+
+        .form-select {
+          width: 100%;
+          padding: 14px 18px;
+          border: 2px solid rgba(255, 255, 255, 0.2);
+          border-radius: 0;
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(10px);
+          color: white;
+          font-size: 15px;
+          font-weight: 500;
+          transition: all 0.3s ease;
+          outline: none;
+        }
+
+        .form-select:focus {
+          border-color: #FFD700;
+          background: rgba(255, 255, 255, 0.15);
+          box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+        }
+
+        .form-select option {
+          background: #333;
+          color: white;
+        }
+
+        .form-buttons {
+          display: flex;
+          gap: 12px;
+          margin-top: 24px;
+        }
+
+        .submit-button {
+          flex: 1;
+          background: linear-gradient(135deg, #28A745, #1E7E34);
+          color: white;
+          border: none;
+          padding: 14px 20px;
+          border-radius: 0;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          font-family: 'Fortnite Battlefest', 'Inter', sans-serif !important;
+        }
+
+        .submit-button:hover:not(:disabled) {
+          background: linear-gradient(135deg, #34CE57, #28A745);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .submit-button:disabled {
+          background: linear-gradient(135deg, #ccc, #999);
+          cursor: not-allowed;
+          transform: none;
+          box-shadow: none;
+        }
+
+        .cancel-button {
+          flex: 1;
+          background: rgba(108, 117, 125, 0.9);
+          color: white;
+          border: none;
+          padding: 14px 20px;
+          border-radius: 0;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          font-family: 'Fortnite Battlefest', 'Inter', sans-serif !important;
+        }
+
+        .cancel-button:hover {
+          background: rgba(108, 117, 125, 1);
+          transform: translateY(-1px);
+          box-shadow: 0 4px 15px rgba(108, 117, 125, 0.4);
+        }
+
+        .members-section {
+          margin-top: 32px;
+        }
+
+        .members-title {
+          color: white;
+          font-size: 20px;
+          font-weight: 700;
+          margin-bottom: 20px;
+          text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          font-family: 'Fortnite Battlefest', 'Inter', sans-serif !important;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+        }
+
+        .member-card {
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(20px);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          border-radius: 0;
+          padding: 20px;
+          margin-bottom: 16px;
+          transition: all 0.3s ease;
+        }
+
+        .member-card:hover {
+          background: rgba(255, 255, 255, 0.15);
+          border-color: rgba(255, 255, 255, 0.3);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .member-header {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 12px;
+          flex-wrap: wrap;
+        }
+
+        .member-name {
+          color: white;
+          font-size: 16px;
+          font-weight: 700;
+          text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        .member-role {
+          color: rgba(255, 255, 255, 0.9);
+          font-size: 14px;
+          font-weight: 600;
+        }
+
+        .password-badge {
+          background: linear-gradient(135deg, #FFC107, #E0A800);
+          color: white;
+          padding: 4px 8px;
+          border-radius: 0;
+          font-size: 11px;
+          font-weight: 600;
+        }
+
+        .member-info {
+          color: rgba(255, 255, 255, 0.9);
+          font-size: 14px;
+          line-height: 1.6;
+        }
+
+        .member-info div {
+          margin-bottom: 4px;
+        }
+
+        .empty-state {
+          text-align: center;
+          padding: 60px 20px;
+          color: white;
+        }
+
+        .empty-title {
+          font-size: 18px;
+          font-weight: 600;
+          text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        @media (max-width: 768px) {
+          .family-info-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+          }
+
+          .member-result-item {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+
+          .member-result-label {
+            min-width: auto;
+          }
+
+          .form-buttons {
+            flex-direction: column;
+          }
+
+          .family-info-card {
+            padding: 16px;
+          }
+
+          .member-result-card {
+            padding: 16px;
+          }
+
+          .add-form-card {
+            padding: 16px;
+          }
+
+          .member-card {
+            padding: 16px;
+          }
+        }
+      `}</style>
+
+      <div className="premium-family-content">
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <p className="text-red-600 text-sm">{error}</p>
+          <div className="premium-alert error">
+            {error}
           </div>
         )}
 
         {success && (
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <p className="text-green-600 text-sm">{success}</p>
+          <div className="premium-alert success">
+            {success}
           </div>
         )}
 
         {loading ? (
-          <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Загрузка...</p>
+          <div className="premium-loading">
+            <div className="loading-spinner"></div>
+            <p>Загрузка информации о семье...</p>
           </div>
         ) : family ? (
           <>
             {/* Информация о семье */}
-            <div className="bg-blue-50 rounded-lg p-4">
-              <h3 className="font-semibold text-blue-900 mb-3">Информация о семье</h3>
-              <div className="space-y-2 text-sm">
-                <div>
-                  <span className="font-medium text-gray-700">Название:</span>
-                  <span className="ml-2 text-gray-900">{family.name}</span>
-                </div>
-                <div>
-                  <span className="font-medium text-gray-700">Код семьи:</span>
-                  <span className="ml-2 font-mono bg-white px-2 py-1 rounded border">
-                    {family.inviteCode}
-                  </span>
+            <div className="family-info-card">
+              <h3 className="family-info-title">Информация о семье</h3>
+              <div className="family-info-item">
+                <span className="family-info-label">Название:</span>
+                <span className="family-info-value">{family.name}</span>
+              </div>
+              <div className="family-info-item">
+                <span className="family-info-label">Код семьи:</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <span className="family-info-value">{family.inviteCode}</span>
                   <button
                     onClick={() => copyToClipboard(family.inviteCode)}
-                    className="ml-2 text-blue-600 hover:text-blue-800 text-xs"
+                    className="copy-button"
                   >
                     📋 Копировать
                   </button>
@@ -174,39 +626,36 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
 
             {/* Результат добавления нового члена */}
             {newMemberResult && (
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                <h4 className="font-semibold text-green-800 mb-3">
+              <div className="member-result-card">
+                <h4 className="member-result-title">
                   ✅ Член семьи добавлен!
                 </h4>
-                <div className="space-y-2 text-sm">
-                  <div>
-                    <span className="font-medium">Имя:</span> {newMemberResult.name}
-                  </div>
-                  <div>
-                    <span className="font-medium">Временный пароль:</span>
-                    <span className="ml-2 font-mono bg-white px-2 py-1 rounded border">
-                      {newMemberResult.tempPassword}
-                    </span>
-                    <button
-                      onClick={() => copyToClipboard(newMemberResult.tempPassword)}
-                      className="ml-2 text-green-600 hover:text-green-800 text-xs"
-                    >
-                      📋 Копировать
-                    </button>
-                  </div>
-                  <div>
-                    <span className="font-medium">Ссылка для входа:</span>
-                    <button
-                      onClick={() => copyToClipboard(newMemberResult.firstLoginUrl)}
-                      className="ml-2 text-green-600 hover:text-green-800 text-xs"
-                    >
-                      📋 Копировать ссылку
-                    </button>
-                  </div>
+                <div className="member-result-item">
+                  <span className="member-result-label">Имя:</span>
+                  <span className="member-result-value">{newMemberResult.name}</span>
+                </div>
+                <div className="member-result-item">
+                  <span className="member-result-label">Временный пароль:</span>
+                  <span className="member-result-value">{newMemberResult.tempPassword}</span>
+                  <button
+                    onClick={() => copyToClipboard(newMemberResult.tempPassword)}
+                    className="copy-button"
+                  >
+                    📋 Копировать
+                  </button>
+                </div>
+                <div className="member-result-item">
+                  <span className="member-result-label">Ссылка для входа:</span>
+                  <button
+                    onClick={() => copyToClipboard(newMemberResult.firstLoginUrl)}
+                    className="copy-button"
+                  >
+                    📋 Копировать ссылку
+                  </button>
                 </div>
                 <button
                   onClick={() => setNewMemberResult(null)}
-                  className="mt-3 text-xs text-gray-500 hover:text-gray-700"
+                  className="hide-button"
                 >
                   Скрыть
                 </button>
@@ -217,7 +666,7 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
             {!showAddForm && (
               <button
                 onClick={() => setShowAddForm(true)}
-                className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-3 px-4 rounded-lg transition duration-200"
+                className="add-member-button"
               >
                 ➕ Добавить члена семьи
               </button>
@@ -225,49 +674,49 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
 
             {/* Форма добавления члена семьи */}
             {showAddForm && (
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="font-semibold text-gray-800 mb-3">Добавить члена семьи</h4>
-                <form onSubmit={handleAddMember} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+              <div className="add-form-card">
+                <h4 className="add-form-title">Добавить члена семьи</h4>
+                <form onSubmit={handleAddMember}>
+                  <div className="form-group">
+                    <label className="form-label">
                       Имя
                     </label>
                     <input
                       type="text"
                       value={newMemberName}
                       onChange={(e) => setNewMemberName(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="form-input"
                       placeholder="Введите имя"
                       required
                     />
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <div className="form-group">
+                    <label className="form-label">
                       Роль
                     </label>
                     <select
                       value={newMemberRole}
                       onChange={(e) => setNewMemberRole(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="form-select"
                     >
                       <option value="CHILD">👶 Ребенок</option>
                       <option value="PARENT">👨‍👩‍👧‍👦 Родитель</option>
                     </select>
                   </div>
 
-                  <div className="flex space-x-3">
+                  <div className="form-buttons">
                     <button
                       type="submit"
                       disabled={addingMember}
-                      className="flex-1 bg-green-500 hover:bg-green-600 disabled:bg-green-300 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
+                      className="submit-button"
                     >
                       {addingMember ? "Добавление..." : "Добавить"}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowAddForm(false)}
-                      className="flex-1 bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition duration-200"
+                      className="cancel-button"
                     >
                       Отмена
                     </button>
@@ -277,37 +726,30 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
             )}
 
             {/* Список членов семьи */}
-            <div>
-              <h3 className="font-semibold text-gray-800 mb-3">
+            <div className="members-section">
+              <h3 className="members-title">
                 Члены семьи ({family.members.length})
               </h3>
-              <div className="space-y-3">
+              <div>
                 {family.members.map((member) => (
-                  <div
-                    key={member.id}
-                    className="bg-white border border-gray-200 rounded-lg p-4"
-                  >
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1">
-                        <div className="flex items-center space-x-2 mb-2">
-                          <span className="font-medium text-gray-900">
-                            {member.name}
-                          </span>
-                          <span className="text-sm text-gray-600">
-                            {getRoleDisplay(member.role)}
-                          </span>
-                          {member.mustChangePassword && (
-                            <span className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded">
-                              Требует смены пароля
-                            </span>
-                          )}
-                        </div>
-                        <div className="text-sm text-gray-600 space-y-1">
-                          <div>⭐ Звёзды: {member.points}</div>
-                          {member.email && <div>📧 Email: {member.email}</div>}
-                          <div>📅 Создан: {formatDate(member.createdAt)}</div>
-                        </div>
-                      </div>
+                  <div key={member.id} className="member-card">
+                    <div className="member-header">
+                      <span className="member-name">
+                        {member.name}
+                      </span>
+                      <span className="member-role">
+                        {getRoleDisplay(member.role)}
+                      </span>
+                      {member.mustChangePassword && (
+                        <span className="password-badge">
+                          Требует смены пароля
+                        </span>
+                      )}
+                    </div>
+                    <div className="member-info">
+                      <div>⭐ Звёзды: {member.points}</div>
+                      {member.email && <div>📧 Email: {member.email}</div>}
+                      <div>📅 Создан: {formatDate(member.createdAt)}</div>
                     </div>
                   </div>
                 ))}
@@ -315,8 +757,8 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
             </div>
           </>
         ) : (
-          <div className="text-center py-8">
-            <p className="text-gray-600">
+          <div className="empty-state">
+            <p className="empty-title">
               Семья не найдена. Возможно, вы не являетесь администратором семьи.
             </p>
           </div>
