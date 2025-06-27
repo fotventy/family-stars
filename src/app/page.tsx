@@ -262,10 +262,10 @@ export default function Home() {
         {showOptions ? (
           <div className="welcome-card">
             <h1 className="main-title">
-              ⭐ Family Stars
+              ⭐ Семейные Звёздочки
             </h1>
             <p className="main-subtitle">
-              Система семейных достижений и наград
+              Помогай дома - получай звёзды - покупай призы!
             </p>
             
             <div className="options-container">
