@@ -58,11 +58,6 @@ export default function RegisterFamily() {
     router.push("/login");
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setSuccess("Ссылка скопирована в буфер обмена!");
-  };
-
   return (
     <>
       {/* 💫 ПРЕМИУМ СТИЛИ */}
@@ -415,36 +410,20 @@ export default function RegisterFamily() {
                   <span className="result-value">{result.familyCode}</span>
                 </div>
                 
-                <div className="result-item">
-                  <span className="result-label">Ссылка для входа:</span>
-                  <button
-                    onClick={() => copyToClipboard(result.firstLoginUrl)}
-                    className="result-value"
-                    style={{ 
-                      cursor: 'pointer',
-                      textDecoration: 'underline',
-                      backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                      border: '1px solid rgba(255, 255, 255, 0.3)'
-                    }}
-                  >
-                    📋 Копировать ссылку для входа
-                  </button>
-                </div>
               </div>
 
               <div className="info-box">
                 <p className="info-text">
-                  💡 <strong>Как войти:</strong> Скопируйте ссылку выше и отправьте её администратору семьи. 
-                  При переходе по ссылке будет предложено создать новый пароль.
+                  💡 <strong>Готово!</strong> Теперь нажмите кнопку ниже, чтобы создать пароль и войти в систему.
                 </p>
               </div>
 
               <button
-                onClick={handleGoToLogin}
+                onClick={() => window.location.href = result.firstLoginUrl}
                 className="premium-button success"
                 style={{ width: '100%', marginTop: '24px' }}
               >
-                Перейти к входу
+                🔐 Создать пароль и войти
               </button>
             </div>
           ) : (
