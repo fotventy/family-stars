@@ -8,6 +8,7 @@ interface User {
   id: string;
   name: string;
   role: string;
+  gender?: string;
   displayName: string;
   emoji: string;
   color: string;
@@ -43,6 +44,7 @@ export default function Login() {
         id: user.id,
         name: user.name,
         role: user.role,
+        gender: user.gender,
         displayName: user.name,
         emoji: getUserEmoji(user.role, user.name),
         color: getUserColor(user.role, user.name)
@@ -81,6 +83,14 @@ export default function Login() {
     ];
     const index = name.length % childColors.length;
     return childColors[index];
+  };
+
+  const getRoleDisplay = (role: string, gender?: string) => {
+    if (role === 'PARENT' || role === 'FAMILY_ADMIN') {
+      return gender === 'мама' ? 'Мама' : 'Папа';
+    } else {
+      return gender === 'дочь' ? 'Дочь' : 'Сын';
+    }
   };
 
   const handleFamilyCodeSubmit = async (e: React.FormEvent) => {
@@ -725,7 +735,7 @@ export default function Login() {
                     <div className="user-emoji">{user.emoji}</div>
                     <div className="user-name fortnite-text">{user.displayName}</div>
                     <div className="user-role">
-                      {user.role === "PARENT" || user.role === "FAMILY_ADMIN" ? "Родитель" : "Ребёнок"}
+                      {getRoleDisplay(user.role, user.gender)}
                     </div>
                   </div>
                 ))}
@@ -762,7 +772,7 @@ export default function Login() {
                 <div className="modal-user-emoji">{selectedUser.emoji}</div>
                 <div className="modal-user-name fortnite-text">{selectedUser.displayName}</div>
                 <div className="modal-user-role">
-                  {selectedUser.role === "PARENT" || selectedUser.role === "FAMILY_ADMIN" ? "Родитель" : "Ребёнок"}
+                  {getRoleDisplay(selectedUser.role, selectedUser.gender)}
                 </div>
               </div>
 

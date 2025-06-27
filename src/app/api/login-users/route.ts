@@ -22,7 +22,8 @@ export async function GET(request: Request) {
               id: true,
               name: true,
               role: true,
-              points: true
+              points: true,
+              gender: true
             },
             orderBy: [
               { role: 'desc' }, // PARENT/FAMILY_ADMIN сначала
@@ -53,7 +54,8 @@ export async function GET(request: Request) {
           id: true,
           name: true,
           role: true,
-          points: true
+          points: true,
+          gender: true
         },
         orderBy: [
           { role: 'desc' }, // PARENT сначала
