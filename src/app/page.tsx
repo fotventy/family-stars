@@ -162,6 +162,7 @@ export default function Home() {
           background: linear-gradient(135deg, #FF6B35, #F7931E);
           color: white;
           box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+          clip-path: polygon(20px 0%, 100% 0%, calc(100% - 20px) 100%, 0% 100%);
         }
 
         .option-button.primary:hover {
@@ -174,6 +175,7 @@ export default function Home() {
           background: linear-gradient(135deg, #4CAF50, #45a049);
           color: white;
           box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+          clip-path: polygon(0% 0%, calc(100% - 20px) 0%, 100% 100%, 20px 100%);
         }
 
         .option-button.secondary:hover {
