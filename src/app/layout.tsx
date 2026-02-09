@@ -18,7 +18,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ru">
+    <html lang="en">
       <body className={inter.className}>
         <Providers>
           <div className="min-h-screen flex flex-col">

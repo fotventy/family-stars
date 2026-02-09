@@ -5,12 +5,12 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendInviteEmail } from "@/lib/email";
 
-// Генерация уникального токена для первого входа
+export const dynamic = "force-dynamic";
+
 function generateFirstLoginToken() {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
 
-// Получить информацию о семье
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
