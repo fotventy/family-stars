@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useTranslation } from "@/contexts/LanguageContext";
 import { LOCALES } from "@/lib/i18n";
+import "@/app/login/login.css";
 
 export default function SecuritySettings() {
   const { data: session, status } = useSession();
@@ -16,69 +17,69 @@ export default function SecuritySettings() {
     return null;
   }
 
+  const backHref = session?.user?.role === "CHILD" ? "/child" : "/parent";
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-800 to-slate-900 text-white p-6">
+    <div className="login-page-root premium-login-container min-h-screen text-white p-6">
       <div className="max-w-lg mx-auto">
         <Link
-          href={session?.user?.role === "CHILD" ? "/child" : "/parent"}
-          className="text-white/80 hover:text-white text-sm mb-6 inline-block"
+          href={backHref}
+          className="text-white/90 hover:text-white text-sm mb-6 inline-block font-medium"
+          style={{ textShadow: "0 1px 3px rgba(0,0,0,0.3)" }}
         >
           ← {t("common.backToApp")}
         </Link>
-        <h1 className="text-2xl font-bold mb-2">{t("settings.securityTitle")}</h1>
-        <p className="text-white/70 text-sm mb-8">{t("settings.securitySubtitle")}</p>
 
-        <div className="bg-white/5 border border-white/10 rounded-xl p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
-            <span aria-hidden>🌐</span> {t("settings.languageTitle")}
-          </h2>
-          <p className="text-white/80 text-sm mb-4">
-            {t("common.language")}
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {LOCALES.map((loc) => (
-              <button
-                key={loc}
-                type="button"
-                onClick={() => setLocale(loc)}
-                className={`py-2 px-3 rounded-lg text-sm font-medium transition ${
-                  locale === loc
-                    ? "bg-indigo-600 text-white"
-                    : "bg-white/10 text-white/80 hover:bg-white/20"
-                }`}
-                title={t(`settings.lang_${loc}`)}
-              >
-                {loc.toUpperCase()}
-              </button>
-            ))}
-          </div>
-        </div>
+        <div className="login-card p-8">
+          <h1 className="text-2xl font-bold text-white mb-1" style={{ textShadow: "0 2px 10px rgba(0,0,0,0.3)" }}>
+            {t("settings.securityTitle")}
+          </h1>
+          <p className="text-white/85 text-sm mb-8">{t("settings.securitySubtitle")}</p>
 
-        <div className="bg-white/5 border border-white/10 rounded-xl p-6">
-          <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
-            <span aria-hidden>🔐</span> {t("settings.twoFaTitle")}
-          </h2>
-          <p className="text-white/80 text-sm mb-4">
-            {t("settings.twoFaDesc")}
-          </p>
-          <p className="text-white/60 text-xs">
-            {t("settings.twoFaTip")}
-          </p>
-        </div>
+          <section className="mb-8 rounded-xl p-5" style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)" }}>
+            <h2 className="text-lg font-semibold text-white mb-2 flex items-center gap-2" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.3)" }}>
+              <span aria-hidden>🌐</span> {t("settings.languageTitle")}
+            </h2>
+            <p className="text-white/90 text-sm mb-4">{t("common.language")}</p>
+            <div className="flex flex-wrap gap-2">
+              {LOCALES.map((loc) => (
+                <button
+                  key={loc}
+                  type="button"
+                  onClick={() => setLocale(loc)}
+                  className={`py-2 px-3 rounded-xl text-sm font-medium transition ${
+                    locale === loc
+                      ? "bg-white text-purple-700 shadow"
+                      : "bg-white/15 text-white hover:bg-white/25 border border-white/20"
+                  }`}
+                  title={t(`settings.lang_${loc}`)}
+                >
+                  {loc.toUpperCase()}
+                </button>
+              ))}
+            </div>
+          </section>
 
-        <div className="bg-white/5 border border-white/10 rounded-xl p-6 mt-6">
-          <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
-            <span aria-hidden>🔕</span> {t("settings.noAdsTitle")}
-          </h2>
-          <p className="text-white/80 text-sm mb-4">
-            {t("settings.noAdsDesc")}
-          </p>
-          <Link
-            href="/subscription"
-            className="inline-block py-2 px-4 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium rounded-lg transition"
-          >
-            {t("settings.subscriptionLink")}
-          </Link>
+          <section className="mb-8 rounded-xl p-5" style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)" }}>
+            <h2 className="text-lg font-semibold text-white mb-2 flex items-center gap-2" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.3)" }}>
+              <span aria-hidden>🔐</span> {t("settings.twoFaTitle")}
+            </h2>
+            <p className="text-white/90 text-sm mb-2">{t("settings.twoFaDesc")}</p>
+            <p className="text-white/75 text-xs">{t("settings.twoFaTip")}</p>
+          </section>
+
+          <section className="rounded-xl p-5" style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)" }}>
+            <h2 className="text-lg font-semibold text-white mb-2 flex items-center gap-2" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.3)" }}>
+              <span aria-hidden>🔕</span> {t("settings.noAdsTitle")}
+            </h2>
+            <p className="text-white/90 text-sm mb-4">{t("settings.noAdsDesc")}</p>
+            <Link
+              href="/subscription"
+              className="inline-block py-3 px-5 bg-white text-purple-700 font-semibold rounded-xl hover:bg-white/95 transition shadow"
+            >
+              {t("settings.subscriptionLink")}
+            </Link>
+          </section>
         </div>
       </div>
     </div>

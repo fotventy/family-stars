@@ -1281,34 +1281,40 @@ export default function ParentDashboard() {
               </div>
 
               <div className="cards-grid users">
-                {users.filter(user => user.role === 'CHILD').map(user => (
+                {users.map(user => (
                   <div key={user.id} className="premium-card">
                     <div className="card-content">
                       <div style={{textAlign: 'center'}}>
-                        <div className="card-emoji" style={{fontSize: '40px', marginBottom: '12px'}}>👦</div>
+                        <div className="card-emoji" style={{fontSize: '40px', marginBottom: '12px'}}>
+                          {user.role === 'CHILD' ? '👦' : user.role === 'FAMILY_ADMIN' ? '👑' : '👤'}
+                        </div>
                         <h3 className="card-title fortnite-text">{user.name}</h3>
                         <p className="card-description">
-                          Создан: {new Date(user.createdAt).toLocaleDateString('ru')}
+                          {user.role === 'FAMILY_ADMIN' ? 'Админ' : user.role === 'PARENT' ? 'Родитель' : 'Ребёнок'} · Создан: {new Date(user.createdAt).toLocaleDateString('ru')}
                         </p>
                         <div className="card-actions" style={{justifyContent: 'center', marginTop: '12px'}}>
-                          <button 
-                            onClick={() => handleEditUser(user)}
-                            className="premium-button edit"
-                          >
-                            ✏️
-                          </button>
-                          <button 
-                            onClick={() => deleteUser(user.id)}
-                            className="premium-button delete"
-                          >
-                            🗑️
-                          </button>
+                          {user.role === 'CHILD' && (
+                            <>
+                              <button 
+                                onClick={() => handleEditUser(user)}
+                                className="premium-button edit"
+                              >
+                                ✏️
+                              </button>
+                              <button 
+                                onClick={() => deleteUser(user.id)}
+                                className="premium-button delete"
+                              >
+                                🗑️
+                              </button>
+                            </>
+                          )}
                         </div>
                       </div>
                     </div>
                   </div>
       ))}
-                {users.filter(user => user.role === 'CHILD').length === 0 && (
+                {users.length === 0 && (
                   <div className="empty-state">
                     <div className="empty-emoji">👨‍👩‍👧‍👦</div>
                     <h3 className="empty-title">Добро пожаловать в семейную систему!</h3>
@@ -1517,9 +1523,10 @@ export default function ParentDashboard() {
         onDeleteGift={deleteGift}
       />
 
-        <FamilyManagementModal 
+        <FamilyManagementModal
           isOpen={isFamilyModalOpen}
           onClose={() => setIsFamilyModalOpen(false)}
+          onMemberAdded={fetchUsers}
         />
 
         <ProfileModal 

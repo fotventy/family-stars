@@ -2,6 +2,9 @@
 
 import React, { useState } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -10,6 +13,8 @@ interface ProfileModalProps {
 
 export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   const { data: session, update } = useSession();
+  const router = useRouter();
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -24,15 +29,14 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
     setSuccess("");
     setLoading(true);
 
-    // Валидация
     if (newPassword && newPassword !== confirmPassword) {
-      setError("Новые пароли не совпадают");
+      setError(t("profile.passwordsMismatch"));
       setLoading(false);
       return;
     }
 
     if (newPassword && newPassword.length < 6) {
-      setError("Новый пароль должен быть не менее 6 символов");
+      setError(t("profile.passwordTooShort"));
       setLoading(false);
       return;
     }
@@ -48,11 +52,6 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
         updateData.newPassword = newPassword;
       }
 
-      console.log("=== FRONTEND DEBUG ===");
-      console.log("Session:", session);
-      console.log("Session user ID:", session?.user?.id);
-      console.log("Update data:", updateData);
-
       const response = await fetch("/api/profile", {
         method: "PUT",
         headers: {
@@ -61,30 +60,27 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
         body: JSON.stringify(updateData)
       });
 
-      console.log("Response status:", response.status);
-
       const result = await response.json();
 
       if (response.ok) {
-        setSuccess("Профиль успешно обновлён!");
+        setSuccess(t("profile.success"));
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
-        
-        // Обновляем сессию если изменилось имя
+
         if (name !== session?.user?.name) {
           await update({ name });
         }
-        
+
         setTimeout(() => {
           onClose();
           setSuccess("");
         }, 2000);
       } else {
-        setError(result.error || "Ошибка при обновлении профиля");
+        setError(result.error || t("profile.error"));
       }
-    } catch (error) {
-      setError("Произошла ошибка при обновлении профиля");
+    } catch {
+      setError(t("profile.error"));
     } finally {
       setLoading(false);
     }
@@ -431,7 +427,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
           <div className="modal-header">
             <h2 className="modal-title fortnite-title">
               <span>👤</span>
-              Настройки профиля
+              {t("profile.title")}
             </h2>
             <button className="close-button" onClick={handleClose}>
               ✕
@@ -453,7 +449,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
 
             <div className="form-group">
               <label htmlFor="name" className="form-label">
-                📝 Имя пользователя
+                📝 {t("profile.username")}
               </label>
               <input
                 id="name"
@@ -461,7 +457,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="form-input"
-                placeholder="Введите новое имя"
+                placeholder={t("profile.usernamePlaceholder")}
                 required
               />
             </div>
@@ -469,15 +465,15 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
             <div className="password-section">
               <div className="section-title">
                 <span>🔒</span>
-                Изменение пароля
+                {t("profile.changePassword")}
               </div>
               <p className="help-text">
-                Оставьте поля пустыми, если не хотите менять пароль
+                {t("profile.changePasswordHint")}
               </p>
 
               <div className="form-group">
                 <label htmlFor="currentPassword" className="form-label">
-                  🔑 Текущий пароль
+                  🔑 {t("profile.currentPassword")}
                 </label>
                 <input
                   id="currentPassword"
@@ -485,13 +481,13 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   className="form-input"
-                  placeholder="Введите текущий пароль"
+                  placeholder={t("profile.currentPasswordPlaceholder")}
                 />
               </div>
 
               <div className="form-group">
                 <label htmlFor="newPassword" className="form-label">
-                  🆕 Новый пароль
+                  🆕 {t("profile.newPassword")}
                 </label>
                 <input
                   id="newPassword"
@@ -499,14 +495,14 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   className="form-input"
-                  placeholder="Введите новый пароль"
+                  placeholder={t("profile.newPasswordPlaceholder")}
                   minLength={6}
                 />
               </div>
 
               <div className="form-group">
                 <label htmlFor="confirmPassword" className="form-label">
-                  ✅ Подтвердите новый пароль
+                  ✅ {t("profile.confirmPassword")}
                 </label>
                 <input
                   id="confirmPassword"
@@ -514,9 +510,40 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="form-input"
-                  placeholder="Повторите новый пароль"
+                  placeholder={t("profile.confirmPasswordPlaceholder")}
                   minLength={6}
                 />
+              </div>
+            </div>
+
+            <div className="password-section">
+              <div className="section-title">
+                <span>🌐</span>
+                {t("profile.securityAndMore")}
+              </div>
+              <p className="help-text">
+                {t("profile.languageAndSecurity")}, 2FA, {t("settings.noAdsTitle")}.
+              </p>
+              <div className="form-actions" style={{ flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    router.push("/settings/security");
+                  }}
+                  className="premium-button"
+                  style={{ background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)", color: "white", flex: "1 1 auto", minWidth: "140px" }}
+                >
+                  🔐 {t("profile.openSecurity")}
+                </button>
+                <Link
+                  href="/subscription"
+                  onClick={onClose}
+                  className="premium-button"
+                  style={{ background: "linear-gradient(135deg, #059669 0%, #047857 100%)", color: "white", flex: "1 1 auto", minWidth: "140px", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}
+                >
+                  🔕 {t("profile.openSubscription")}
+                </Link>
               </div>
             </div>
 
@@ -526,14 +553,14 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
                 onClick={handleClose}
                 className="premium-button cancel"
               >
-                ❌ Отмена
+                ❌ {t("profile.cancel")}
               </button>
               <button
                 type="submit"
                 disabled={loading}
                 className="premium-button save"
               >
-                {loading ? '⏳ Сохранение...' : '💾 Сохранить'}
+                {loading ? `⏳ ${t("profile.saving")}` : `💾 ${t("profile.save")}`}
               </button>
             </div>
           </form>

@@ -22,8 +22,9 @@ export async function GET(request: Request) {
     }
 
     const familyId = (session as any).user.familyId as string | undefined;
-    const where: { role: string; familyId?: string | null } = { role: "CHILD" };
+    const where: { familyId?: string | null } = {};
     if (familyId) where.familyId = familyId;
+    else where.familyId = null;
 
     const users = await prisma.user.findMany({
       where,

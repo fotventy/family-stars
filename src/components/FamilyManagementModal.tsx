@@ -25,9 +25,11 @@ interface Family {
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  /** Called after a family member was successfully added (so parent page can refetch users list). */
+  onMemberAdded?: () => void;
 }
 
-export default function FamilyManagementModal({ isOpen, onClose }: Props) {
+export default function FamilyManagementModal({ isOpen, onClose, onMemberAdded }: Props) {
   const { locale } = useTranslation();
   const [family, setFamily] = useState<Family | null>(null);
   const [loading, setLoading] = useState(false);
@@ -106,9 +108,10 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
       setNewMemberGender("son");
       setNewMemberEmail("");
       setShowAddForm(false);
-      
+
       await loadFamily();
-      
+      onMemberAdded?.();
+
     } catch (error) {
       setError(error instanceof Error ? error.message : "Failed to add");
     } finally {

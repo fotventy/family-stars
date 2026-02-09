@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useTranslation } from "@/contexts/LanguageContext";
+import "@/app/login/login.css";
 
 export default function Welcome() {
   const { data: session, status } = useSession();
@@ -30,33 +31,34 @@ export default function Welcome() {
 
   if (status === "loading" || status === "unauthenticated") {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-600 to-purple-700">
-        <div className="text-white text-lg">{t("common.loading")}</div>
+      <div className="login-page-root premium-login-container min-h-screen flex items-center justify-center">
+        <div className="text-white text-lg" style={{ textShadow: "0 2px 10px rgba(0,0,0,0.3)" }}>
+          {t("common.loading")}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-500">
-      <div className="max-w-md w-full bg-white/10 backdrop-blur-lg rounded-2xl p-8 shadow-xl border border-white/20">
-        <h1 className="text-2xl font-bold text-white text-center mb-2">
-          {t("welcome.title")}
-        </h1>
-        <p className="text-white/90 text-center text-sm mb-6">
-          {t("welcome.subtitle")}
-        </p>
+    <div className="login-page-root premium-login-container min-h-screen flex flex-col items-center justify-center p-6">
+      <div className="login-card max-w-md w-full mx-auto relative overflow-hidden">
+        <div className="login-header">
+          <div className="login-emoji">✨</div>
+          <h1 className="login-title">{t("welcome.title")}</h1>
+          <p className="login-subtitle">{t("welcome.subtitle")}</p>
+        </div>
 
-        <div className="bg-white/10 rounded-xl p-5 mb-6">
-          <h2 className="text-lg font-semibold text-white mb-2 flex items-center gap-2">
+        <div className="rounded-xl p-5 mb-6 text-left" style={{ background: "rgba(255,255,255,0.12)", border: "1px solid rgba(255,255,255,0.2)" }}>
+          <h2 className="text-lg font-semibold text-white mb-2 flex items-center gap-2" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.3)" }}>
             <span aria-hidden>🔐</span> {t("welcome.twoFaTitle")}
           </h2>
-          <p className="text-white/85 text-sm leading-relaxed mb-4">
+          <p className="text-white/90 text-sm leading-relaxed mb-4" style={{ opacity: 0.95 }}>
             {t("welcome.twoFaDesc")}
           </p>
           <button
             type="button"
             onClick={handleEnable2FA}
-            className="w-full py-3 px-4 bg-white text-purple-700 font-semibold rounded-xl hover:bg-white/90 transition"
+            className="w-full py-3 px-4 rounded-xl font-semibold transition text-purple-700 bg-white hover:bg-white/95 shadow-lg"
           >
             {t("welcome.enable2fa")}
           </button>
@@ -65,12 +67,12 @@ export default function Welcome() {
         <button
           type="button"
           onClick={handleSkip}
-          className="w-full py-3 px-4 bg-white/20 text-white font-medium rounded-xl hover:bg-white/30 transition border border-white/30"
+          className="w-full py-3 px-4 rounded-xl font-medium transition text-white border-2 border-white/40 bg-white/15 hover:bg-white/25"
         >
           {t("welcome.skip")}
         </button>
 
-        <p className="text-white/70 text-xs text-center mt-6">
+        <p className="text-white/80 text-xs text-center mt-6" style={{ textShadow: "0 1px 2px rgba(0,0,0,0.2)" }}>
           {t("welcome.twoFaLater")}
         </p>
       </div>
