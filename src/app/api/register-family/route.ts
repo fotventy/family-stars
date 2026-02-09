@@ -38,6 +38,7 @@ export async function POST(request: Request) {
 
     const hashedPassword = await hash(rawPassword, 10);
     const inviteCode = generateInviteCode();
+    const gender = parentType === "мама" || String(parentType).toLowerCase() === "mom" ? "mom" : "dad";
 
     const admin = await prisma.user.create({
       data: {
@@ -48,6 +49,7 @@ export async function POST(request: Request) {
         points: 0,
         mustChangePassword: false,
         isEmailVerified: false,
+        gender,
       },
     });
 
@@ -66,8 +68,8 @@ export async function POST(request: Request) {
       data: { familyId: family.id }
     });
 
-    // Create default tasks and gifts for the new family (locale: ru | en, default ru)
-    const lang = typeof locale === "string" && (locale === "en" || locale === "ru") ? locale : "ru";
+    // Create default tasks and gifts for the new family (any app locale; fallback en)
+    const lang = typeof locale === "string" ? locale : "en";
     const defaultTasks = getDefaultTasks(lang);
     const defaultGifts = getDefaultGifts(lang);
 

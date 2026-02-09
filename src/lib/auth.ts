@@ -56,6 +56,7 @@ const providers: NextAuthOptions["providers"] = [
         email: user.email ?? undefined,
         familyId: user.familyId ?? undefined,
         image: user.image ?? undefined,
+        gender: user.gender ?? undefined,
       };
     },
   }),
@@ -100,12 +101,13 @@ export const authOptions: NextAuthOptions = {
     },
     async jwt({ token, user, account, trigger, session }) {
       if (user && "id" in user) {
-        const u = user as { id: string; role: string; familyId?: string; email?: string; name?: string };
+        const u = user as { id: string; role: string; familyId?: string; email?: string; name?: string; gender?: string };
         token.id = u.id;
         token.role = u.role as "PARENT" | "CHILD" | "FAMILY_ADMIN";
         token.familyId = u.familyId;
         token.email = u.email ?? token.email;
         token.name = u.name ?? token.name;
+        token.gender = u.gender;
       }
       if (
         (account?.provider === "google" || account?.provider === "apple") &&
@@ -120,6 +122,7 @@ export const authOptions: NextAuthOptions = {
           token.role = dbUser.role as "PARENT" | "CHILD" | "FAMILY_ADMIN";
           token.familyId = dbUser.familyId ?? undefined;
           token.name = dbUser.name;
+          token.gender = dbUser.gender ?? undefined;
         }
       }
       if (trigger === "update" && session?.name) {
@@ -134,6 +137,7 @@ export const authOptions: NextAuthOptions = {
         (session.user as any).name = token.name ?? session.user.name;
         (session.user as any).familyId = token.familyId;
         (session.user as any).email = token.email ?? session.user.email;
+        (session.user as any).gender = token.gender;
       }
       return session;
     },

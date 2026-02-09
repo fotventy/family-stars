@@ -34,6 +34,7 @@ export async function GET(request: Request) {
         role: true,
         points: true,
         createdAt: true,
+        gender: true,
       },
     });
 

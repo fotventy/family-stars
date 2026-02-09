@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     }
 
     const { locale } = await request.json().catch(() => ({}));
-    const lang = typeof locale === "string" && (locale === "en" || locale === "ru") ? locale : "ru";
+    const lang = typeof locale === "string" ? locale : "en";
 
     const [existingTasks, existingGifts] = await Promise.all([
       prisma.task.count({ where: { familyId } }),

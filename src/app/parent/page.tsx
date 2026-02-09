@@ -18,6 +18,7 @@ interface User {
   name: string;
   role: "PARENT" | "CHILD" | "FAMILY_ADMIN";
   createdAt: string;
+  gender?: string | null;
 }
 
 interface Task {
@@ -92,7 +93,7 @@ export default function ParentDashboard() {
         const res = await fetch("/api/seed-defaults", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ locale: locale === "ru" || locale === "en" ? locale : "ru" }),
+          body: JSON.stringify({ locale: locale || "en" }),
         });
         if (res.ok) {
           const data = await res.json();
@@ -1176,24 +1177,24 @@ export default function ParentDashboard() {
         <div className="premium-header">
           <div className="header-content">
             <h1 className="welcome-text fortnite-title">
-              Привет, {session?.user?.name}! 👨‍💼
+              {t("parent.greeting").replace("{name}", session?.user?.name ?? "")} {(() => { const g = (session?.user as { gender?: string })?.gender; return g === "mom" || g === "мама" || g === "female" ? "👩" : "👨"; })()}
             </h1>
             <div className="admin-badge">
               <span>👑</span>
-              Панель управления
+              {t("parent.controlPanel")}
             </div>
             <div className="header-buttons">
         <button
                 className="profile-btn fortnite-text"
                 onClick={() => setIsProfileModalOpen(true)}
               >
-                👤 Профиль
+                👤 {t("parent.profile")}
         </button>
         <button 
                 className="logout-btn fortnite-text"
                 onClick={() => signOut({ callbackUrl: '/login' })}
         >
-                🚪 Выйти
+                🚪 {t("parent.logout")}
         </button>
       </div>
           </div>
@@ -1320,7 +1321,7 @@ export default function ParentDashboard() {
                     <div className="card-content">
                       <div style={{textAlign: 'center'}}>
                         <div className="card-emoji" style={{fontSize: '40px', marginBottom: '12px'}}>
-                          {user.role === 'CHILD' ? '👦' : user.role === 'FAMILY_ADMIN' ? '👑' : '👤'}
+                          {user.role === 'CHILD' ? '👦' : user.role === 'FAMILY_ADMIN' ? '👑' : (user.gender === 'mom' || user.gender === 'мама' || user.gender === 'female' ? '👩' : '👨')}
                         </div>
                         <h3 className="card-title fortnite-text">{user.name}</h3>
                         <p className="card-description">

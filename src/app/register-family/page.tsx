@@ -43,7 +43,7 @@ export default function RegisterFamily() {
           parentName,
           parentType,
           password,
-          locale: locale === "ru" || locale === "en" ? locale : "ru",
+          locale: locale || "en",
         })
       });
 

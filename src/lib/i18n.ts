@@ -17,8 +17,8 @@ export const LOCALES: Locale[] = [
   "de",
   "it",
   "es",
-  "zh",
   "pt",
+  "zh",
   "ja",
   "ko",
 ];
