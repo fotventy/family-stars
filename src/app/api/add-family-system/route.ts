@@ -23,6 +23,13 @@ export async function GET(request: Request) {
     }
 
     try {
+      await prisma.$executeRaw`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "gender" TEXT;`;
+      console.log("User.gender column added");
+    } catch (error) {
+      console.log("User.gender already exists or error:", error);
+    }
+
+    try {
       await prisma.$executeRaw`CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email");`;
       console.log("Email unique index created");
     } catch (error) {
