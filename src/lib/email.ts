@@ -4,7 +4,7 @@
  */
 
 const RESEND_API_KEY = process.env.RESEND_API_KEY;
-const EMAIL_FROM = process.env.EMAIL_FROM || Family Stars <onboarding@resend.dev>";
+const EMAIL_FROM = process.env.EMAIL_FROM || "Family Stars <onboarding@resend.dev>";
 
 export interface SendInviteParams {
   to: string;
