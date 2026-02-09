@@ -70,7 +70,7 @@ export default function RegisterFamily() {
 
   return (
     <>
-      {/* 💫 ПРЕМИУМ СТИЛИ */}
+      {/* Premium styles */}
       <style jsx>{`
         * {
           margin: 0;
@@ -95,7 +95,7 @@ export default function RegisterFamily() {
           padding: 20px;
         }
 
-        /* 🌟 АНИМИРОВАННЫЙ ГРАДИЕНТНЫЙ ФОН */
+        /* Animated gradient background */
         .premium-container::before {
           content: '';
           position: absolute;
@@ -343,7 +343,7 @@ export default function RegisterFamily() {
           text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
         }
 
-        /* 📱 МОБИЛЬНАЯ АДАПТАЦИЯ */
+        /* Mobile adaptation */
         @media (max-width: 768px) {
           .premium-container {
             padding: 16px;

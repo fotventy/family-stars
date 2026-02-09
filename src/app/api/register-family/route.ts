@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 
-// Генерация кода приглашения семьи
+// Generate family invite code
 function generateInviteCode() {
   return Math.random().toString(36).substring(2, 10).toUpperCase();
 }
@@ -13,25 +13,25 @@ export async function POST(request: Request) {
 
     if (!email || !familyName || !parentName || !parentType) {
       return NextResponse.json(
-        { error: "Все поля обязательны для заполнения" },
+        { error: "All fields are required" },
         { status: 400 }
       );
     }
     if (!rawPassword || typeof rawPassword !== "string" || rawPassword.length < 6 || rawPassword.length > 128) {
       return NextResponse.json(
-        { error: "Пароль должен быть от 6 до 128 символов" },
+        { error: "Password must be 6 to 128 characters" },
         { status: 400 }
       );
     }
 
-    // Проверяем, не существует ли уже пользователь с таким email
+    // Check if user with this email already exists
     const existingUserByEmail = await prisma.user.findUnique({
       where: { email }
     });
 
     if (existingUserByEmail) {
       return NextResponse.json(
-        { error: "Пользователь с таким email уже существует" }, 
+        { error: "User with this email already exists" }, 
         { status: 400 }
       );
     }
@@ -51,7 +51,7 @@ export async function POST(request: Request) {
       },
     });
 
-    // Создаем семью
+    // Create family
     const family = await prisma.family.create({
       data: {
         name: familyName,
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
       }
     });
 
-    // Связываем админа с семьей
+    // Link admin to family
     await prisma.user.update({
       where: { id: admin.id },
       data: { familyId: family.id }
@@ -69,26 +69,26 @@ export async function POST(request: Request) {
     const baseUrl = process.env.NEXTAUTH_URL || "https://family-stars.vercel.app";
     const payload: Record<string, unknown> = {
       success: true,
-      message: `Семья "${familyName}" успешно создана!`,
+      message: `Family "${familyName}" created successfully!`,
       parentName,
       parentType,
       loginUrl: `${baseUrl}/login`,
       familyCode: inviteCode,
-      messageDetail: "Войдите на странице входа, введя код семьи и заданный пароль.",
+      messageDetail: "Sign in on the login page using the family code and the password you set.",
     };
 
     return NextResponse.json(payload);
 
   } catch (error) {
-    console.error("❌ Ошибка регистрации семьи:", error);
+    console.error("Family registration error:", error);
     const details = error instanceof Error ? error.message : String(error);
     const isUniqueName = /Unique constraint.*[\"']?name[\"']?/i.test(details) || /unique.*name/i.test(details);
     const isUniqueEmail = /Unique constraint.*[\"']?email[\"']?/i.test(details) || /unique.*email/i.test(details);
-    let userError = "Ошибка регистрации семьи";
+    let userError = "Family registration failed";
     if (isUniqueName) {
-      userError = "Пользователь с таким именем уже зарегистрирован. Укажите уникальное имя (например, Мама Мария или Папа Алексей).";
+      userError = "A user with this name is already registered. Use a unique name (e.g. Mom Maria or Dad Alex).";
     } else if (isUniqueEmail) {
-      userError = "Пользователь с таким email уже существует";
+      userError = "User with this email already exists";
     } else if (details) {
       userError = details;
     }

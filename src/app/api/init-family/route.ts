@@ -7,15 +7,11 @@ export async function POST(request: Request) {
   const err = await requireAdmin(request);
   if (err) return err;
   try {
-    console.log("👨‍👩‍👧‍👦 Инициализируем всю семью...");
+    console.log("Initializing family...");
 
-    // Список всех семейных пользователей
     const familyUsers = [
-      // Родители
       { name: "Папа", password: "papa2024", role: "PARENT" },
       { name: "Мама", password: "mama2024", role: "PARENT" },
-      
-      // Дети
       { name: "Назар", password: "nazar2024", role: "CHILD" },
       { name: "Влад", password: "vlad2024", role: "CHILD" },
       { name: "Никита", password: "nikita2024", role: "CHILD" },
@@ -26,13 +22,13 @@ export async function POST(request: Request) {
 
     for (const userData of familyUsers) {
       try {
-        // Проверяем, существует ли пользователь
+        // Check if user already exists
         const existingUser = await prisma.user.findFirst({
           where: { name: userData.name },
         });
 
         if (existingUser) {
-          console.log(`⚠️  Пользователь ${userData.name} уже существует`);
+          console.log(`User ${userData.name} already exists`);
           existingUsers.push({
             name: userData.name,
             role: userData.role,
@@ -41,20 +37,18 @@ export async function POST(request: Request) {
           continue;
         }
 
-        // Хешируем пароль
         const hashedPassword = await hash(userData.password, 10);
 
-        // Создаем пользователя
         const newUser = await prisma.user.create({
           data: {
             name: userData.name,
             password: hashedPassword,
             role: userData.role as "PARENT" | "CHILD",
-            points: userData.role === "CHILD" ? 10 : 0, // Даем детям стартовые звёзды
+            points: userData.role === "CHILD" ? 10 : 0,
           }
         });
 
-        console.log(`✅ Создан пользователь: ${newUser.name} (${newUser.role})`);
+        console.log(`Created user: ${newUser.name} (${newUser.role})`);
         createdUsers.push({
           name: newUser.name,
           password: userData.password,
@@ -64,7 +58,7 @@ export async function POST(request: Request) {
         });
 
       } catch (userError) {
-        console.error(`❌ Ошибка создания пользователя ${userData.name}:`, userError);
+        console.error(`Error creating user ${userData.name}:`, userError);
         existingUsers.push({
           name: userData.name,
           role: userData.role,
@@ -74,17 +68,13 @@ export async function POST(request: Request) {
       }
     }
 
-    // Получаем общее количество пользователей
     const totalUsers = await prisma.user.count();
 
-    console.log(`🎉 Инициализация семьи завершена!`);
-    console.log(`📊 Создано новых: ${createdUsers.length}`);
-    console.log(`📊 Уже существовало: ${existingUsers.length}`);
-    console.log(`📊 Всего пользователей: ${totalUsers}`);
+    console.log(`Family init done. Created: ${createdUsers.length}, existing: ${existingUsers.length}, total: ${totalUsers}`);
 
     return NextResponse.json({
       success: true,
-      message: `Семья инициализирована! Создано ${createdUsers.length} новых пользователей`,
+      message: `Family initialized. Created ${createdUsers.length} new users`,
       statistics: {
         created: createdUsers.length,
         existing: existingUsers.length,
@@ -95,11 +85,11 @@ export async function POST(request: Request) {
     });
 
   } catch (error) {
-    console.error("❌ Ошибка инициализации семьи:", error);
+    console.error("Family init error:", error);
     return NextResponse.json(
       { 
         success: false,
-        error: "Ошибка инициализации семьи",
+        error: "Family initialization failed",
         details: error instanceof Error ? error.message : String(error)
       }, 
       { status: 500 }

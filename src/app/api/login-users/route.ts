@@ -8,7 +8,7 @@ export async function GET(request: Request) {
 
     if (!familyCode || !familyCode.trim()) {
       return NextResponse.json(
-        { error: "Укажите код семьи (familyCode)" },
+        { error: "Family code (familyCode) is required" },
         { status: 400 }
       );
     }
@@ -34,7 +34,7 @@ export async function GET(request: Request) {
 
     if (!family) {
       return NextResponse.json(
-        { error: "Неверный код семьи" },
+        { error: "Invalid family code" },
         { status: 404 }
       );
     }
@@ -44,10 +44,10 @@ export async function GET(request: Request) {
       users: family.members,
     });
   } catch (error) {
-    console.error("❌ Ошибка получения пользователей:", error);
+    console.error("Error fetching login users:", error);
     return NextResponse.json(
       { 
-        error: "Ошибка получения пользователей",
+        error: "Error fetching users",
         details: error instanceof Error ? error.message : String(error)
       }, 
       { status: 500 }

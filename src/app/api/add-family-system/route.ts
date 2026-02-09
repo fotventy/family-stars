@@ -6,9 +6,8 @@ export async function GET(request: Request) {
   const err = await requireAdmin(request);
   if (err) return err;
   try {
-    console.log("🔧 Добавляем семейную систему в базу данных...");
+    console.log("Adding family system to database...");
     
-    // Добавляем недостающие колонки в таблицу User
     try {
       await prisma.$executeRaw`
         ALTER TABLE "User" 
@@ -18,20 +17,18 @@ export async function GET(request: Request) {
         ADD COLUMN IF NOT EXISTS "mustChangePassword" BOOLEAN DEFAULT false,
         ADD COLUMN IF NOT EXISTS "isEmailVerified" BOOLEAN DEFAULT false;
       `;
-      console.log("✅ Добавлены новые колонки в таблицу User");
+      console.log("User columns added");
     } catch (error) {
-      console.log("⚠️ Колонки уже существуют или ошибка:", error);
+      console.log("User columns already exist or error:", error);
     }
 
-    // Создаем уникальный индекс для email
     try {
       await prisma.$executeRaw`CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email");`;
-      console.log("✅ Создан уникальный индекс для email");
+      console.log("Email unique index created");
     } catch (error) {
-      console.log("⚠️ Индекс уже существует:", error);
+      console.log("Index already exists:", error);
     }
 
-    // Создаем таблицу Family
     try {
       await prisma.$executeRaw`
         CREATE TABLE IF NOT EXISTS "Family" (
@@ -44,30 +41,28 @@ export async function GET(request: Request) {
           CONSTRAINT "Family_pkey" PRIMARY KEY ("id")
         );
       `;
-      console.log("✅ Создана таблица Family");
+      console.log("Family table created");
     } catch (error) {
-      console.log("⚠️ Таблица Family уже существует:", error);
+      console.log("Family table already exists:", error);
     }
 
-    // Создаем индексы для Family
     try {
       await prisma.$executeRaw`CREATE UNIQUE INDEX IF NOT EXISTS "Family_inviteCode_key" ON "Family"("inviteCode");`;
       await prisma.$executeRaw`CREATE UNIQUE INDEX IF NOT EXISTS "Family_adminId_key" ON "Family"("adminId");`;
-      console.log("✅ Созданы индексы для таблицы Family");
+      console.log("Family indexes created");
     } catch (error) {
-      console.log("⚠️ Индексы уже существуют:", error);
+      console.log("Indexes already exist:", error);
     }
 
-    // Добавляем внешние ключи
     try {
       await prisma.$executeRaw`
         ALTER TABLE "User" 
         ADD CONSTRAINT "User_familyId_fkey" 
         FOREIGN KEY ("familyId") REFERENCES "Family"("id") ON DELETE SET NULL ON UPDATE CASCADE;
       `;
-      console.log("✅ Добавлен внешний ключ User -> Family");
+      console.log("FK User -> Family added");
     } catch (error) {
-      console.log("⚠️ Внешний ключ уже существует:", error);
+      console.log("FK already exists:", error);
     }
 
     try {
@@ -76,38 +71,37 @@ export async function GET(request: Request) {
         ADD CONSTRAINT "Family_adminId_fkey" 
         FOREIGN KEY ("adminId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
       `;
-      console.log("✅ Добавлен внешний ключ Family -> User");
+      console.log("FK Family -> User added");
     } catch (error) {
-      console.log("⚠️ Внешний ключ уже существует:", error);
+      console.log("FK already exists:", error);
     }
 
-    console.log("✅ Семейная система добавлена в базу данных!");
+    console.log("Family system added to database.");
 
-    // Проверяем обновленную структуру
     const userCount = await prisma.user.count();
     const familyCount = await prisma.family.count();
 
     return NextResponse.json({
       success: true,
-      message: "Семейная система успешно добавлена!",
+      message: "Family system added successfully.",
       updates: {
-        "User table": "✅ Добавлены колонки: email, familyId, tempPassword, mustChangePassword, isEmailVerified",
-        "Family table": "✅ Создана",
-        "Indexes": "✅ Созданы уникальные индексы",
-        "Foreign keys": "✅ Добавлены связи между таблицами"
+        "User table": "Columns added: email, familyId, tempPassword, mustChangePassword, isEmailVerified",
+        "Family table": "Created",
+        "Indexes": "Unique indexes created",
+        "Foreign keys": "Relations added"
       },
       counts: {
         users: userCount,
         families: familyCount
       },
-      nextStep: "Теперь можно создавать семьи через /api/register-family"
+      nextStep: "You can now create families via /api/register-family"
     });
 
   } catch (error) {
-    console.error("❌ Ошибка добавления семейной системы:", error);
+    console.error("Error adding family system:", error);
     return NextResponse.json({
       success: false,
-      error: "Ошибка добавления семейной системы",
+      error: "Failed to add family system",
       details: error instanceof Error ? error.message : String(error)
     }, { status: 500 });
 

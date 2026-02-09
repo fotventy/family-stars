@@ -13,18 +13,18 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Новая модель для семей
+// Family model
 model Family {
   id          String   @id @default(cuid())
   name        String
-  inviteCode  String   @unique // для приглашений новых членов
-  adminId     String   @unique // ID администратора семьи
+  inviteCode  String   @unique
+  adminId     String   @unique
   admin       User     @relation("FamilyAdmin", fields: [adminId], references: [id])
   
   members       User[]   @relation("FamilyMembers")
   tasks         Task[]
   gifts         Gift[]
-  premiumUntil  DateTime? // подписка «без рекламы» действует до этой даты
+  premiumUntil  DateTime?
 
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -32,25 +32,24 @@ model Family {
 
 model User {
   id        String   @id @default(cuid())
-  name      String   // не уникально: имена/фамилии могут совпадать
+  name      String
   password  String
-  role      String   @default("CHILD") // PARENT, CHILD, FAMILY_ADMIN
-  gender    String?  // "папа", "мама", "сын", "дочь"
+  role      String   @default("CHILD")
+  gender    String?
   points    Int      @default(0)
   parentId  String?
   parent    User?    @relation("FamilyRelation", fields: [parentId], references: [id])
   children  User[]   @relation("FamilyRelation")
   
-  // Новые семейные поля (опциональные для совместимости)
   email            String?   @unique
   familyId         String?
   family           Family?   @relation("FamilyMembers", fields: [familyId], references: [id])
-  adminFamily      Family?   @relation("FamilyAdmin") // семья, где этот пользователь админ
-  tempPassword         String?   // токен для первого входа
-  tempPasswordExpiresAt DateTime? // срок действия токена (TTL)
+  adminFamily      Family?   @relation("FamilyAdmin")
+  tempPassword         String?
+  tempPasswordExpiresAt DateTime?
   mustChangePassword   Boolean  @default(false)
   isEmailVerified      Boolean  @default(false)
-  image                String?  // аватар (URL от OAuth)
+  image                String?
   
   tasks     UserTask[]
   gifts     UserGift[]
@@ -67,7 +66,7 @@ model Task {
   isActive    Boolean     @default(true)
   emoji       String?
   sortOrder   Int         @default(0)
-  familyId    String?     // null = глобальные задачи для всех семей
+  familyId    String?
   family      Family?     @relation(fields: [familyId], references: [id], onDelete: SetNull)
   userTasks   UserTask[]
 
@@ -96,7 +95,7 @@ model Gift {
   isActive    Boolean     @default(true)
   emoji       String?
   sortOrder   Int         @default(0)
-  familyId    String?     // null = глобальные подарки для всех семей
+  familyId    String?
   family      Family?     @relation(fields: [familyId], references: [id], onDelete: SetNull)
   userGifts   UserGift[]
 

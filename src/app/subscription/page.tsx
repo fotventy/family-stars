@@ -33,8 +33,8 @@ export default function SubscriptionPage() {
 
   const handlePurchase = () => {
     if (isNative) {
-      // В нативном приложении подключите плагин покупок (например @capgo/capacitor-native-purchases).
-      // После успешной покупки вызовите POST /api/subscription с заголовком X-Subscription-Secret.
+      // In native app, use a purchases plugin (e.g. @capgo/capacitor-native-purchases);
+      // after successful purchase call POST /api/subscription with X-Subscription-Secret header.
       import("@capacitor/core").then(({ Capacitor }) => {
         const Plugins = (Capacitor as any).Plugins;
         if (Plugins?.Purchases?.purchase) {

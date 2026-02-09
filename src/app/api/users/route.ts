@@ -14,7 +14,7 @@ export async function GET(request: Request) {
         (session as any).user.role !== "FAMILY_ADMIN")
     ) {
       return NextResponse.json(
-        { error: "Недостаточно прав" },
+        { error: "Insufficient permissions" },
         { status: 403 }
       );
     }
@@ -36,9 +36,9 @@ export async function GET(request: Request) {
 
     return NextResponse.json(users);
   } catch (error) {
-    console.error("Ошибка при получении пользователей:", error);
+    console.error("Error fetching users:", error);
     return NextResponse.json(
-      { error: "Внутренняя ошибка сервера" }, 
+      { error: "Internal server error" }, 
       { status: 500 }
     );
   }
@@ -50,7 +50,7 @@ export async function POST(request: Request) {
     
     if (!session || ((session as any).user.role !== "PARENT" && (session as any).user.role !== "FAMILY_ADMIN")) {
       return NextResponse.json(
-        { error: "Недостаточно прав" }, 
+        { error: "Insufficient permissions" }, 
         { status: 403 }
       );
     }
@@ -59,19 +59,19 @@ export async function POST(request: Request) {
 
     if (!name || !password) {
       return NextResponse.json(
-        { error: "Имя и пароль обязательны" },
+        { error: "Name and password are required" },
         { status: 400 }
       );
     }
     if (password.length < 6 || password.length > 128) {
       return NextResponse.json(
-        { error: "Пароль должен быть от 6 до 128 символов" },
+        { error: "Password must be 6 to 128 characters" },
         { status: 400 }
       );
     }
     if (name.length > 100) {
       return NextResponse.json(
-        { error: "Имя слишком длинное" },
+        { error: "Name is too long" },
         { status: 400 }
       );
     }
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "В этой семье уже есть пользователь с таким именем" },
+        { error: "A user with this name already exists in this family" },
         { status: 400 }
       );
     }
@@ -107,9 +107,9 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Ошибка при создании пользователя:", error);
+    console.error("Error creating user:", error);
     return NextResponse.json(
-      { error: "Внутренняя ошибка сервера" }, 
+      { error: "Internal server error" }, 
       { status: 500 }
     );
   }
@@ -121,7 +121,7 @@ export async function PUT(request: Request) {
     
     if (!session || ((session as any).user.role !== "PARENT" && (session as any).user.role !== "FAMILY_ADMIN")) {
       return NextResponse.json(
-        { error: "Недостаточно прав" }, 
+        { error: "Insufficient permissions" }, 
         { status: 403 }
       );
     }
@@ -131,17 +131,17 @@ export async function PUT(request: Request) {
 
     if (!id) {
       return NextResponse.json(
-        { error: "ID пользователя обязателен" },
+        { error: "User ID is required" },
         { status: 400 }
       );
     }
 
     const target = await prisma.user.findUnique({ where: { id } });
     if (!target) {
-      return NextResponse.json({ error: "Пользователь не найден" }, { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
     if (familyId && target.familyId !== familyId) {
-      return NextResponse.json({ error: "Недостаточно прав" }, { status: 403 });
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
     const updateData: { name?: string; password?: string } = {};
@@ -153,7 +153,7 @@ export async function PUT(request: Request) {
 
       if (existingUser && existingUser.id !== id) {
         return NextResponse.json(
-          { error: "В этой семье уже есть пользователь с таким именем" },
+          { error: "A user with this name already exists in this family" },
           { status: 400 }
         );
       }
@@ -164,7 +164,7 @@ export async function PUT(request: Request) {
     if (password) {
       if (password.length < 6 || password.length > 128) {
         return NextResponse.json(
-          { error: "Пароль должен быть от 6 до 128 символов" },
+          { error: "Password must be 6 to 128 characters" },
           { status: 400 }
         );
       }
@@ -182,9 +182,9 @@ export async function PUT(request: Request) {
       role: updatedUser.role
     });
   } catch (error) {
-    console.error("Ошибка при обновлении пользователя:", error);
+    console.error("Error updating user:", error);
     return NextResponse.json(
-      { error: "Внутренняя ошибка сервера" }, 
+      { error: "Internal server error" }, 
       { status: 500 }
     );
   }
@@ -196,7 +196,7 @@ export async function DELETE(request: Request) {
     
     if (!session || ((session as any).user.role !== "PARENT" && (session as any).user.role !== "FAMILY_ADMIN")) {
       return NextResponse.json(
-        { error: "Недостаточно прав" }, 
+        { error: "Insufficient permissions" }, 
         { status: 403 }
       );
     }
@@ -207,26 +207,26 @@ export async function DELETE(request: Request) {
 
     if (!id) {
       return NextResponse.json(
-        { error: "ID пользователя обязателен" },
+        { error: "User ID is required" },
         { status: 400 }
       );
     }
 
     const target = await prisma.user.findUnique({ where: { id } });
     if (!target) {
-      return NextResponse.json({ error: "Пользователь не найден" }, { status: 404 });
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
     if (familyId && target.familyId !== familyId) {
-      return NextResponse.json({ error: "Недостаточно прав" }, { status: 403 });
+      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
     }
 
     await prisma.user.delete({ where: { id } });
 
-    return NextResponse.json({ message: "Пользователь удален" });
+    return NextResponse.json({ message: "User deleted" });
   } catch (error) {
-    console.error("Ошибка при удалении пользователя:", error);
+    console.error("Error deleting user:", error);
     return NextResponse.json(
-      { error: "Внутренняя ошибка сервера" }, 
+      { error: "Internal server error" }, 
       { status: 500 }
     );
   }

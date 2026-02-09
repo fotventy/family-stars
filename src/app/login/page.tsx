@@ -39,7 +39,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
 
-  // Код семьи из ссылки-приглашения — подставляем в поле и сразу загружаем пользователей
+  // Family code from invite link — prefill and load users
   useEffect(() => {
     const code = searchParams.get("familyCode") ?? searchParams.get("code") ?? searchParams.get("invite");
     if (code?.trim()) {
@@ -60,7 +60,7 @@ export default function Login() {
         throw new Error(data.error || t("login.errorLoadUsers"));
       }
       
-      // Преобразуем пользователей из БД в формат для страницы логина
+      // Map DB users to login page format
       const formattedUsers = data.users.map((user: any) => ({
         id: user.id,
         name: user.name,
@@ -75,7 +75,7 @@ export default function Login() {
       setFamilyName(data.familyName);
       setStep(2);
     } catch (error: any) {
-      console.error('Ошибка загрузки пользователей:', error);
+      console.error('Failed to load users:', error);
       setError(error.message || t("login.errorLoadUsers"));
     }
   };
@@ -84,7 +84,7 @@ export default function Login() {
     if (role === 'PARENT') {
       return name === 'Папа' ? '👨' : '👩';
     }
-    // Для детей используем разные эмодзи
+    // Different emojis for children
     const childEmojis = ['😊', '😎', '😄', '🤗', '😋'];
     const index = name.length % childEmojis.length;
     return childEmojis[index];
@@ -94,7 +94,7 @@ export default function Login() {
     if (role === 'PARENT') {
       return name === 'Папа' ? 'from-orange-400 to-red-500' : 'from-pink-400 to-purple-500';
     }
-    // Для детей используем разные цвета
+    // Different colors for children
     const childColors = [
       'from-blue-400 to-indigo-500',
       'from-green-400 to-blue-500', 
@@ -119,7 +119,7 @@ export default function Login() {
     try {
       await fetchUsers(familyCode.trim());
     } catch (error) {
-      // Ошибка уже обработана в fetchUsers
+      // Error already handled in fetchUsers
     } finally {
       setLoading(false);
     }
@@ -156,19 +156,16 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUser) return;
-
     setError("");
     setLoading(true);
-
     try {
-    const result = await signIn("credentials", {
-      redirect: false,
-      name: selectedUser.name,
-      password,
-      familyCode: familyCode || undefined,
-    });
-
-    if (result?.error) {
+      const result = await signIn("credentials", {
+        redirect: false,
+        name: selectedUser.name,
+        password,
+        familyCode: familyCode || undefined,
+      });
+      if (result?.error) {
         setError(t("login.errorWrongPassword"));
       } else {
         router.push("/");
@@ -206,15 +203,15 @@ export default function Login() {
 
   function getRoleDisplay(role: string, gender: string | undefined) {
     if (role === "PARENT" || role === "FAMILY_ADMIN") {
-      return gender === "мама" ? t("login.roleMom") : t("login.roleDad");
+      return gender === "mom" || gender === "мама" ? t("login.roleMom") : t("login.roleDad");
     }
-    return gender === "дочь" ? t("login.roleDaughter") : t("login.roleSon");
+    return gender === "daughter" || gender === "дочь" ? t("login.roleDaughter") : t("login.roleSon");
   }
 
   return (
     <div className="login-page-root premium-login-container">
         <div className="login-card">
-          {/* ШАГ 1: ВВОД КОДА СЕМЬИ */}
+          {/* STEP 1: FAMILY CODE */}
           {step === 1 && (
             <>
               <div className="login-header">
@@ -317,7 +314,7 @@ export default function Login() {
             </>
           )}
 
-          {/* ШАГ 2: ВЫБОР ПОЛЬЗОВАТЕЛЯ */}
+          {/* STEP 2: SELECT USER */}
           {step === 2 && (
             <>
               <div className="login-header">
@@ -361,10 +358,9 @@ export default function Login() {
               </div>
             </>
           )}
-        </div>
 
-        {/* ШАГ 3: ВВОД ПАРОЛЯ */}
-        {step === 3 && selectedUser && (
+          {/* STEP 3: PASSWORD */}
+          {step === 3 && selectedUser && (
           <div className="modal-overlay" onClick={handleModalClose}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
               <button className="close-button" onClick={handleModalClose}>

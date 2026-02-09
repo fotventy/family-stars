@@ -14,9 +14,9 @@ const providers: NextAuthOptions["providers"] = [
   CredentialsProvider({
     name: "Credentials",
     credentials: {
-      name: { label: "Имя", type: "text" },
-      password: { label: "Пароль", type: "password" },
-      familyCode: { label: "Код семьи", type: "text" },
+      name: { label: "Name", type: "text" },
+      password: { label: "Password", type: "password" },
+      familyCode: { label: "Family code", type: "text" },
     },
     async authorize(credentials) {
       if (!credentials?.name || !credentials.password) return null;
@@ -42,7 +42,7 @@ const providers: NextAuthOptions["providers"] = [
       return {
         id: user.id,
         name: user.name,
-        role: user.role,
+        role: user.role as "PARENT" | "CHILD" | "FAMILY_ADMIN",
         email: user.email ?? undefined,
         familyId: user.familyId ?? undefined,
         image: user.image ?? undefined,
@@ -92,7 +92,7 @@ export const authOptions: NextAuthOptions = {
       if (user && "id" in user) {
         const u = user as { id: string; role: string; familyId?: string; email?: string; name?: string };
         token.id = u.id;
-        token.role = u.role;
+        token.role = u.role as "PARENT" | "CHILD" | "FAMILY_ADMIN";
         token.familyId = u.familyId;
         token.email = u.email ?? token.email;
         token.name = u.name ?? token.name;
@@ -107,7 +107,7 @@ export const authOptions: NextAuthOptions = {
         });
         if (dbUser) {
           token.id = dbUser.id;
-          token.role = dbUser.role;
+          token.role = dbUser.role as "PARENT" | "CHILD" | "FAMILY_ADMIN";
           token.familyId = dbUser.familyId ?? undefined;
           token.name = dbUser.name;
         }
@@ -133,7 +133,7 @@ export const authOptions: NextAuthOptions = {
   },
   session: {
     strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 дней
+    maxAge: 30 * 24 * 60 * 60, // 30 days
   },
   secret: process.env.NEXTAUTH_SECRET,
 };

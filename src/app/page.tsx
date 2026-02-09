@@ -15,7 +15,7 @@ export default function Home() {
   const [langPopupOpen, setLangPopupOpen] = useState(false);
   const { t, locale, setLocale } = useTranslation();
 
-  // По ссылке-приглашению (code / invite) — сразу на страницу входа в семью
+  // Invite link (code / invite) — redirect to family login
   useEffect(() => {
     const code = searchParams.get("code") ?? searchParams.get("invite") ?? searchParams.get("familyCode");
     if (code && status === "unauthenticated") {
@@ -233,7 +233,7 @@ export default function Home() {
           font-weight: 500;
         }
 
-        /* 📱 МОБИЛЬНАЯ АДАПТАЦИЯ */
+        /* Mobile adaptation */
         @media (max-width: 768px) {
           .premium-container {
             padding: 16px;

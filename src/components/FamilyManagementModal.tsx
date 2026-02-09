@@ -32,11 +32,10 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   
-  // Форма добавления члена семьи
   const [showAddForm, setShowAddForm] = useState(false);
   const [newMemberName, setNewMemberName] = useState("");
   const [newMemberRole, setNewMemberRole] = useState("CHILD");
-  const [newMemberGender, setNewMemberGender] = useState("сын");
+  const [newMemberGender, setNewMemberGender] = useState("son");
   const [newMemberEmail, setNewMemberEmail] = useState("");
   const [addingMember, setAddingMember] = useState(false);
   const [newMemberResult, setNewMemberResult] = useState<any>(null);
@@ -56,12 +55,12 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Ошибка загрузки семьи");
+        throw new Error(data.error || "Failed to load family");
       }
 
       setFamily(data.family);
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Ошибка загрузки");
+      setError(error instanceof Error ? error.message : "Failed to load");
     } finally {
       setLoading(false);
     }
@@ -71,7 +70,7 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
     e.preventDefault();
     
     if (!newMemberName || !newMemberRole || !newMemberGender) {
-      setError("Заполните все поля");
+      setError("Please fill in all fields");
       return;
     }
 
@@ -94,22 +93,21 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Ошибка добавления члена семьи");
+        throw new Error(data.error || "Failed to add family member");
       }
 
       setSuccess(data.message);
       setNewMemberResult(data.member);
       setNewMemberName("");
       setNewMemberRole("CHILD");
-      setNewMemberGender("сын");
+      setNewMemberGender("son");
       setNewMemberEmail("");
       setShowAddForm(false);
       
-      // Перезагружаем семью
       await loadFamily();
       
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Ошибка добавления");
+      setError(error instanceof Error ? error.message : "Failed to add");
     } finally {
       setAddingMember(false);
     }
@@ -117,28 +115,28 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
-    setSuccess("Скопировано в буфер обмена!");
+    setSuccess("Copied to clipboard!");
     setTimeout(() => setSuccess(""), 3000);
   };
 
   const getRoleDisplay = (role: string, gender?: string) => {
     switch (role) {
       case "FAMILY_ADMIN": 
-        return gender === "мама" ? "👑👩 Мама-админ" : "👑👨 Папа-админ";
+        return gender === "mom" || gender === "мама" ? "👑👩 Mom (admin)" : "👑👨 Dad (admin)";
       case "PARENT": 
-        return gender === "мама" ? "👩 Мама" : "👨 Папа";
+        return gender === "mom" || gender === "мама" ? "👩 Mom" : "👨 Dad";
       case "CHILD": 
-        return gender === "дочь" ? "👧 Дочь" : "👦 Сын";
+        return gender === "daughter" || gender === "дочь" ? "👧 Daughter" : "👦 Son";
       default: return role;
     }
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('ru-RU');
+    return new Date(dateString).toLocaleDateString('en-US');
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} title="🏠 Управление семьей">
+    <Modal isOpen={isOpen} onClose={onClose} title="🏠 Family management">
       <style jsx>{`
         .premium-family-content {
           color: white;
@@ -609,19 +607,18 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
         {loading ? (
           <div className="premium-loading">
             <div className="loading-spinner"></div>
-            <p>Загрузка информации о семье...</p>
+            <p>Loading family info...</p>
           </div>
         ) : family ? (
           <>
-            {/* Информация о семье */}
             <div className="family-info-card">
-              <h3 className="family-info-title">Информация о семье</h3>
+              <h3 className="family-info-title">Family info</h3>
               <div className="family-info-item">
-                <span className="family-info-label">Название:</span>
+                <span className="family-info-label">Name:</span>
                 <span className="family-info-value">{family.name}</span>
               </div>
               <div className="family-info-item">
-                <span className="family-info-label">Код семьи:</span>
+                <span className="family-info-label">Family code:</span>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                   <span className="family-info-value">{family.inviteCode}</span>
                   <button
@@ -634,26 +631,25 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
               </div>
             </div>
 
-            {/* Результат добавления нового члена */}
             {newMemberResult && (
               <div className="member-result-card">
                 <h4 className="member-result-title">
-                  ✅ Член семьи добавлен!
+                  ✅ Family member added!
                 </h4>
                 <div className="member-result-item">
-                  <span className="member-result-label">Имя:</span>
+                  <span className="member-result-label">Name:</span>
                   <span className="member-result-value">{newMemberResult.name}</span>
                 </div>
                 {newMemberResult.emailSent && (
                   <div className="member-result-item">
-                    <span className="member-result-label">Письмо отправлено на:</span>
+                    <span className="member-result-label">Email sent to:</span>
                     <span className="member-result-value">{newMemberResult.email}</span>
                   </div>
                 )}
                 <div className="member-result-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
-                  <span className="member-result-label">Ссылка для приглашения — отправьте удобным способом:</span>
+                  <span className="member-result-label">Invite link — send by messenger, SMS or any app:</span>
                   <p style={{ fontSize: '12px', opacity: 0.9, margin: '0 0 6px 0' }}>
-                    Скопируйте ссылку и вставьте в мессенджер, соцсеть, SMS или перешлите в любом приложении. {newMemberResult.emailSent && "Копия приглашения также отправлена на почту."}
+                    Copy the link and paste into messenger, social network, SMS or share in any app. {newMemberResult.emailSent && "Invite was also sent by email."}
                   </p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', width: '100%' }}>
                     <code style={{
@@ -670,18 +666,18 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
                       onClick={() => copyToClipboard(newMemberResult.firstLoginUrl)}
                       className="copy-button"
                     >
-                      📋 Копировать ссылку
+                      📋 Copy link
                     </button>
                   </div>
                   <span style={{ fontSize: '12px', opacity: 0.85 }}>
-                    Ссылка действительна 7 дней. По ней человек задаст пароль и войдёт в семью.
+                    Link is valid 7 days. They will set a password and join the family.
                   </span>
                 </div>
                 <button
                   onClick={() => setNewMemberResult(null)}
                   className="hide-button"
                 >
-                  Скрыть
+                  Hide
                 </button>
               </div>
             )}
@@ -692,54 +688,52 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
                 onClick={() => setShowAddForm(true)}
                 className="add-member-button"
               >
-                ➕ Добавить члена семьи
+                ➕ Add family member
               </button>
             )}
 
-            {/* Форма добавления члена семьи */}
             {showAddForm && (
               <div className="add-form-card">
-                <h4 className="add-form-title">Добавить члена семьи</h4>
+                <h4 className="add-form-title">Add family member</h4>
                 <form onSubmit={handleAddMember}>
                   <div className="form-group">
                     <label className="form-label">
-                      Имя
+                      Name
                     </label>
                     <input
                       type="text"
                       value={newMemberName}
                       onChange={(e) => setNewMemberName(e.target.value)}
                       className="form-input"
-                      placeholder="Введите имя"
+                      placeholder="Enter name"
                       required
                     />
                   </div>
                   
                   <div className="form-group">
                     <label className="form-label">
-                      Роль
+                      Role
                     </label>
                     <select
                       value={newMemberRole}
                       onChange={(e) => {
                         setNewMemberRole(e.target.value);
-                        // Автоматически устанавливаем пол по умолчанию
                         if (e.target.value === "PARENT") {
-                          setNewMemberGender("папа");
+                          setNewMemberGender("dad");
                         } else {
-                          setNewMemberGender("сын");
+                          setNewMemberGender("son");
                         }
                       }}
                       className="form-select"
                     >
-                      <option value="CHILD">👶 Ребенок</option>
-                      <option value="PARENT">👨‍👩‍👧‍👦 Родитель</option>
+                      <option value="CHILD">👶 Child</option>
+                      <option value="PARENT">👨‍👩‍👧‍👦 Parent</option>
                     </select>
                   </div>
 
                   <div className="form-group">
                     <label className="form-label">
-                      Пол
+                      Gender
                     </label>
                     <select
                       value={newMemberGender}
@@ -748,13 +742,13 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
                     >
                       {newMemberRole === "PARENT" ? (
                         <>
-                          <option value="папа">👨 Папа</option>
-                          <option value="мама">👩 Мама</option>
+                          <option value="dad">👨 Dad</option>
+                          <option value="mom">👩 Mom</option>
                         </>
                       ) : (
                         <>
-                          <option value="сын">👦 Сын</option>
-                          <option value="дочь">👧 Дочь</option>
+                          <option value="son">👦 Son</option>
+                          <option value="daughter">👧 Daughter</option>
                         </>
                       )}
                     </select>
@@ -762,17 +756,17 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
 
                   <div className="form-group">
                     <label className="form-label">
-                      Email (необязательно)
+                      Email (optional)
                     </label>
                     <input
                       type="email"
                       value={newMemberEmail}
                       onChange={(e) => setNewMemberEmail(e.target.value)}
                       className="form-input"
-                      placeholder="Если указать — приглашение дублируется на почту"
+                      placeholder="If set, invite is also sent by email"
                     />
                     <span className="form-hint" style={{ fontSize: "12px", opacity: 0.85, marginTop: "4px", display: "block" }}>
-                      Ссылку для входа вы всегда сможете скопировать и отправить в мессенджере или любом приложении. Укажите email, если хотите, чтобы приглашение дополнительно пришло на почту.
+                      You can always copy the invite link and send it manually. Add email to also send the invite by email.
                     </span>
                   </div>
 
@@ -782,24 +776,23 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
                       disabled={addingMember}
                       className="submit-button"
                     >
-                      {addingMember ? "Добавление..." : "Добавить"}
+                      {addingMember ? "Adding..." : "Add"}
                     </button>
                     <button
                       type="button"
                       onClick={() => setShowAddForm(false)}
                       className="cancel-button"
                     >
-                      Отмена
+                      Cancel
                     </button>
                   </div>
                 </form>
               </div>
             )}
 
-            {/* Список членов семьи */}
             <div className="members-section">
               <h3 className="members-title">
-                Члены семьи ({family.members.length})
+                Family members ({family.members.length})
               </h3>
               <div>
                 {family.members.map((member) => (
@@ -813,14 +806,14 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
                       </span>
                       {member.mustChangePassword && (
                         <span className="password-badge">
-                          Требует смены пароля
+                          Must change password
                         </span>
                       )}
                     </div>
                     <div className="member-info">
-                      <div>⭐ Звёзды: {member.points}</div>
+                      <div>⭐ Stars: {member.points}</div>
                       {member.email && <div>📧 Email: {member.email}</div>}
-                      <div>📅 Создан: {formatDate(member.createdAt)}</div>
+                      <div>📅 Created: {formatDate(member.createdAt)}</div>
                     </div>
                   </div>
                 ))}
@@ -830,7 +823,7 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
         ) : (
           <div className="empty-state">
             <p className="empty-title">
-              Семья не найдена. Возможно, вы не являетесь администратором семьи.
+              Family not found. You may not be the family administrator.
             </p>
           </div>
         )}
