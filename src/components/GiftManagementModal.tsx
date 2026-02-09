@@ -263,7 +263,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                       border: '2px solid ' + (newGiftEmoji === emoji 
                         ? 'rgba(255, 255, 255, 0.5)' 
                         : 'rgba(255, 255, 255, 0.2)'),
-                      borderRadius: '12px',
+                      borderRadius: 0,
                       cursor: 'pointer',
                       transition: 'all 0.3s ease',
                       backdropFilter: 'blur(10px)'
@@ -281,7 +281,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                   width: '100%',
                   padding: '14px 18px',
                   border: '2px solid rgba(255, 255, 255, 0.2)',
-                  borderRadius: '12px',
+                  borderRadius: 0,
                   background: 'rgba(255, 255, 255, 0.1)',
                   backdropFilter: 'blur(10px)',
                   color: 'white',
@@ -316,7 +316,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                     padding: '8px 16px',
                     background: 'rgba(255, 255, 255, 0.1)',
                     border: '1px solid rgba(255, 255, 255, 0.2)',
-                    borderRadius: '8px',
+                    borderRadius: 0,
                     color: 'white',
                     fontSize: '12px',
                     cursor: 'pointer'
@@ -360,7 +360,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                   width: '100%',
                   padding: '14px 18px',
                   border: '2px solid rgba(255, 255, 255, 0.2)',
-                  borderRadius: '12px',
+                  borderRadius: 0,
                   background: 'rgba(255, 255, 255, 0.1)',
                   backdropFilter: 'blur(10px)',
                   color: 'white',
@@ -407,7 +407,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                   width: '100%',
                   padding: '14px 18px',
                   border: '2px solid rgba(255, 255, 255, 0.2)',
-                  borderRadius: '12px',
+                  borderRadius: 0,
                   background: 'rgba(255, 255, 255, 0.1)',
                   backdropFilter: 'blur(10px)',
                   color: 'white',
@@ -457,7 +457,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                   width: '100%',
                   padding: '14px 18px',
                   border: '2px solid rgba(255, 255, 255, 0.2)',
-                  borderRadius: '12px',
+                  borderRadius: 0,
                   background: 'rgba(255, 255, 255, 0.1)',
                   backdropFilter: 'blur(10px)',
                   color: 'white',
@@ -520,7 +520,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                       border: '2px solid ' + (editEmoji === emoji 
                         ? 'rgba(255, 255, 255, 0.5)' 
                         : 'rgba(255, 255, 255, 0.2)'),
-                      borderRadius: '12px',
+                      borderRadius: 0,
                       cursor: 'pointer',
                       transition: 'all 0.3s ease',
                       backdropFilter: 'blur(10px)'
@@ -538,7 +538,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                   width: '100%',
                   padding: '14px 18px',
                   border: '2px solid rgba(255, 255, 255, 0.2)',
-                  borderRadius: '12px',
+                  borderRadius: 0,
                   background: 'rgba(255, 255, 255, 0.1)',
                   backdropFilter: 'blur(10px)',
                   color: 'white',
@@ -573,7 +573,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                     padding: '8px 16px',
                     background: 'rgba(255, 255, 255, 0.1)',
                     border: '1px solid rgba(255, 255, 255, 0.2)',
-                    borderRadius: '8px',
+                    borderRadius: 0,
                     color: 'white',
                     fontSize: '12px',
                     cursor: 'pointer'
@@ -588,20 +588,30 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
               <button 
                 type="submit" 
                 className="game-button"
-                style={{ flex: 1 }}
+                style={{ flex: 1, borderRadius: 0 }}
               >
                 💾 {t("gifts.save")}
               </button>
               <button 
                 type="button"
-                onClick={cancelEdit}
-                className="game-button"
-                style={{ 
-                  flex: 1,
-                  background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)'
+                onClick={async () => {
+                  if (editingGift && confirm(t("common.delete") + '?')) {
+                    await onDeleteGift(editingGift.id);
+                    onClose();
+                  }
+                }}
+                style={{
+                  padding: '14px 28px',
+                  background: 'linear-gradient(135deg, #DC3545 0%, #C82333 100%)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: 0,
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
                 }}
               >
-                ❌ {t("tasks.cancel")}
+                🗑️ {t("common.delete")}
               </button>
             </div>
           </form>

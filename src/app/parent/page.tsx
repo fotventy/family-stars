@@ -1262,7 +1262,7 @@ export default function ParentDashboard() {
                 type="tasks"
                 onReorder={(items) => handleReorder('tasks', items)}
                 onEdit={(item) => handleEditTask(item as Task)}
-                onDelete={(itemId) => deleteTask(itemId)}
+                onDelete={undefined}
                 emptyTitle={t("parent.emptyTasks")}
                 emptyDescription={t("parent.emptyTasksHint")}
               />
@@ -1291,7 +1291,7 @@ export default function ParentDashboard() {
                 type="gifts"
                 onReorder={(items) => handleReorder('gifts', items)}
                 onEdit={(item) => handleEditGift(item as Gift)}
-                onDelete={(itemId) => deleteGift(itemId)}
+                onDelete={undefined}
                 emptyTitle={t("parent.emptyGifts")}
                 emptyDescription={t("parent.emptyGiftsHint")}
               />

@@ -163,18 +163,6 @@ export const DragDropList: React.FC<DragDropListProps> = ({
               {t("common.edit")}
             </button>
           )}
-          {onDelete && (
-            <button 
-              onClick={(e) => {
-                e.stopPropagation();
-                onDelete(item.id);
-              }}
-              className="premium-button delete"
-            >
-              <span>🗑️</span>
-              {t("common.delete")}
-            </button>
-          )}
         </div>
       </div>
     </div>
@@ -299,40 +287,29 @@ export const DragDropList: React.FC<DragDropListProps> = ({
 
         .premium-button {
           color: white !important;
-          font-size: 11px !important;
-          padding: 8px 12px !important;
-          border-radius: 8px !important;
-          border: none !important;
-          font-weight: 500 !important;
+          font-size: 13px !important;
+          padding: 10px 18px !important;
+          border-radius: 0 !important;
+          border: 1px solid rgba(255, 255, 255, 0.4) !important;
+          font-weight: 600 !important;
           cursor: pointer !important;
-          transition: all 0.3s ease !important;
+          transition: all 0.2s ease !important;
           display: flex !important;
           align-items: center !important;
-          gap: 4px !important;
+          gap: 6px !important;
         }
 
         .premium-button.edit {
-          background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%) !important;
-          color: #1f2937 !important;
-          font-weight: 600 !important;
+          background: rgba(255, 255, 255, 0.2) !important;
+          color: white !important;
+          backdrop-filter: blur(10px);
         }
 
         .premium-button.edit:hover {
-          background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important;
-          transform: translateY(-1px) !important;
-          box-shadow: 0 4px 12px rgba(251, 191, 36, 0.4) !important;
-        }
-
-        .premium-button.delete {
-          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
-          color: white !important;
-          font-weight: 600 !important;
-        }
-
-        .premium-button.delete:hover {
-          background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%) !important;
-          transform: translateY(-1px) !important;
-          box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4) !important;
+          background: rgba(255, 255, 255, 0.3) !important;
+          border-color: rgba(255, 255, 255, 0.6) !important;
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .card-actions {

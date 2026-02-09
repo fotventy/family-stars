@@ -60,9 +60,10 @@ export const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
 
   const handleCreateTask = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newTaskTitle.trim() || !newTaskPoints) return;
+    const points = parseInt(String(newTaskPoints).trim(), 10);
+    if (!newTaskTitle.trim() || String(newTaskPoints).trim() === '' || isNaN(points) || points < 0) return;
     
-    await onCreateTask(newTaskTitle, newTaskDescription, parseInt(newTaskPoints), newTaskEmoji);
+    await onCreateTask(newTaskTitle, newTaskDescription, points, newTaskEmoji || undefined);
     setNewTaskTitle('');
     setNewTaskDescription('');
     setNewTaskPoints('');
@@ -254,41 +255,40 @@ export const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
                   </button>
                 ))}
               </div>
+              <input 
+                type="text" 
+                value={newTaskEmoji}
+                onChange={(e) => setNewTaskEmoji(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '14px 18px',
+                  border: 'none',
+                  borderRadius: 0,
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  backdropFilter: 'blur(10px)',
+                  color: 'white',
+                  fontSize: '15px',
+                  fontWeight: '500',
+                  boxSizing: 'border-box',
+                  marginTop: '12px',
+                  outline: 'none'
+                }}
+                placeholder={t("gifts.placeholderEmoji")}
+              />
             </div>
 
-            <div style={{ 
-              display: 'flex', 
-              gap: '12px', 
-              justifyContent: 'flex-end',
-              marginTop: '32px'
-            }}>
-              <button
-                type="button"
-                onClick={onClose}
-                style={{
-                  padding: '14px 28px',
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                {t("tasks.cancel")}
-              </button>
+            <div style={{ marginTop: '32px' }}>
               <button
                 type="submit"
-                disabled={!newTaskTitle.trim() || !newTaskPoints}
+                disabled={!newTaskTitle.trim() || String(newTaskPoints).trim() === '' || isNaN(parseInt(String(newTaskPoints), 10))}
                 className="game-button complete"
                 style={{
+                  width: '100%',
                   padding: '14px 28px',
                   fontSize: '16px',
                   fontWeight: '600',
-                  opacity: (!newTaskTitle.trim() || !newTaskPoints) ? 0.5 : 1,
-                  cursor: (!newTaskTitle.trim() || !newTaskPoints) ? 'not-allowed' : 'pointer'
+                  opacity: (!newTaskTitle.trim() || String(newTaskPoints).trim() === '') ? 0.5 : 1,
+                  cursor: (!newTaskTitle.trim() || String(newTaskPoints).trim() === '') ? 'not-allowed' : 'pointer'
                 }}
               >
                 ✨ {t("tasks.createTask")}
@@ -456,45 +456,67 @@ export const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
                   </button>
                 ))}
               </div>
+              <input 
+                type="text" 
+                value={editEmoji}
+                onChange={(e) => setEditEmoji(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '14px 18px',
+                  border: 'none',
+                  borderRadius: 0,
+                  background: 'rgba(255, 255, 255, 0.1)',
+                  backdropFilter: 'blur(10px)',
+                  color: 'white',
+                  fontSize: '15px',
+                  fontWeight: '500',
+                  boxSizing: 'border-box',
+                  marginTop: '12px',
+                  outline: 'none'
+                }}
+                placeholder={t("gifts.placeholderEmoji")}
+              />
             </div>
 
-            <div style={{ 
-              display: 'flex', 
-              gap: '12px', 
-              justifyContent: 'flex-end',
-              marginTop: '32px'
-            }}>
-              <button
-                type="button"
-                onClick={cancelEdit}
-                style={{
-                  padding: '14px 28px',
-                  background: 'rgba(255, 255, 255, 0.2)',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                {t("tasks.cancel")}
-              </button>
-              <button
-                type="submit"
-                disabled={!editTitle.trim() || !editPoints}
-                className="game-button complete"
-                style={{
-                  padding: '14px 28px',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  opacity: (!editTitle.trim() || !editPoints) ? 0.5 : 1,
-                  cursor: (!editTitle.trim() || !editPoints) ? 'not-allowed' : 'pointer'
-                }}
-              >
-                💾 {t("tasks.saveChanges")}
-              </button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginTop: '32px' }}>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  type="submit"
+                  disabled={!editTitle.trim() || !editPoints}
+                  className="game-button complete"
+                  style={{
+                    flex: 1,
+                    padding: '14px 28px',
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    opacity: (!editTitle.trim() || !editPoints) ? 0.5 : 1,
+                    cursor: (!editTitle.trim() || !editPoints) ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  💾 {t("tasks.saveChanges")}
+                </button>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (editingTask && confirm(t("common.delete") + '?')) {
+                      await onDeleteTask(editingTask.id);
+                      onClose();
+                    }
+                  }}
+                  style={{
+                    padding: '14px 28px',
+                    background: 'linear-gradient(135deg, #DC3545 0%, #C82333 100%)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: 0,
+                    fontSize: '16px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🗑️ {t("common.delete")}
+                </button>
+              </div>
             </div>
           </form>
         )}
