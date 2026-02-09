@@ -2,9 +2,8 @@
 
 import React, { useState } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { useTranslation } from "@/contexts/LanguageContext";
+import { LOCALES } from "@/lib/i18n";
 
 interface ProfileModalProps {
   isOpen: boolean;
@@ -13,8 +12,7 @@ interface ProfileModalProps {
 
 export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   const { data: session, update } = useSession();
-  const router = useRouter();
-  const { t } = useTranslation();
+  const { t, locale, setLocale } = useTranslation();
   const [name, setName] = useState("");
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -519,32 +517,52 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
             <div className="password-section">
               <div className="section-title">
                 <span>🌐</span>
-                {t("profile.securityAndMore")}
+                {t("settings.languageTitle")}
               </div>
-              <p className="help-text">
-                {t("profile.languageAndSecurity")}, 2FA, {t("settings.noAdsTitle")}.
+              <p className="help-text">{t("common.language")}</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "16px" }}>
+                {LOCALES.map((loc) => (
+                  <button
+                    key={loc}
+                    type="button"
+                    onClick={() => setLocale(loc)}
+                    className="premium-button"
+                    style={{
+                      padding: "8px 12px",
+                      fontSize: "13px",
+                      minHeight: "auto",
+                      background: locale === loc ? "rgba(255,255,255,0.95)" : "rgba(255,255,255,0.15)",
+                      color: locale === loc ? "#4f46e5" : "white",
+                      border: locale === loc ? "none" : "1px solid rgba(255,255,255,0.3)",
+                    }}
+                    title={t(`settings.lang_${loc}`)}
+                  >
+                    {loc.toUpperCase()}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="password-section">
+              <div className="section-title">
+                <span>🔐</span>
+                {t("settings.twoFaTitle")}
+              </div>
+              <p className="help-text">{t("settings.twoFaDesc")}</p>
+              <p className="help-text" style={{ marginTop: "4px", fontSize: "12px", opacity: 0.85 }}>
+                {t("settings.twoFaTip")}
               </p>
-              <div className="form-actions" style={{ flexWrap: "wrap" }}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onClose();
-                    router.push("/settings/security");
-                  }}
-                  className="premium-button"
-                  style={{ background: "linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)", color: "white", flex: "1 1 auto", minWidth: "140px" }}
-                >
-                  🔐 {t("profile.openSecurity")}
-                </button>
-                <Link
-                  href="/subscription"
-                  onClick={onClose}
-                  className="premium-button"
-                  style={{ background: "linear-gradient(135deg, #059669 0%, #047857 100%)", color: "white", flex: "1 1 auto", minWidth: "140px", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none" }}
-                >
-                  🔕 {t("profile.openSubscription")}
-                </Link>
+            </div>
+
+            <div className="password-section">
+              <div className="section-title">
+                <span>🔕</span>
+                {t("settings.noAdsTitle")}
               </div>
+              <p className="help-text">{t("settings.noAdsDesc")}</p>
+              <p className="help-text" style={{ marginTop: "4px" }}>
+                {t("subscription.installApp")}
+              </p>
             </div>
 
             <div className="form-actions">

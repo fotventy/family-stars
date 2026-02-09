@@ -1,15 +1,15 @@
 import { NextResponse } from "next/server";
 import { hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { getDefaultTasks, getDefaultGifts } from "@/lib/defaultTasksAndGifts";
 
-// Generate family invite code
 function generateInviteCode() {
   return Math.random().toString(36).substring(2, 10).toUpperCase();
 }
 
 export async function POST(request: Request) {
   try {
-    const { email, familyName, parentName, parentType, password: rawPassword } = await request.json();
+    const { email, familyName, parentName, parentType, password: rawPassword, locale } = await request.json();
 
     if (!email || !familyName || !parentName || !parentType) {
       return NextResponse.json(
@@ -64,6 +64,34 @@ export async function POST(request: Request) {
     await prisma.user.update({
       where: { id: admin.id },
       data: { familyId: family.id }
+    });
+
+    // Create default tasks and gifts for the new family (locale: ru | en, default ru)
+    const lang = typeof locale === "string" && (locale === "en" || locale === "ru") ? locale : "ru";
+    const defaultTasks = getDefaultTasks(lang);
+    const defaultGifts = getDefaultGifts(lang);
+
+    await prisma.task.createMany({
+      data: defaultTasks.map((t, i) => ({
+        familyId: family.id,
+        title: t.title,
+        description: t.description,
+        points: t.points,
+        emoji: t.emoji ?? null,
+        sortOrder: i,
+        isActive: true,
+      })),
+    });
+    await prisma.gift.createMany({
+      data: defaultGifts.map((g, i) => ({
+        familyId: family.id,
+        title: g.title,
+        description: g.description,
+        points: g.points,
+        emoji: g.emoji ?? null,
+        sortOrder: i,
+        isActive: true,
+      })),
     });
 
     const baseUrl = process.env.NEXTAUTH_URL || "https://family-stars.vercel.app";

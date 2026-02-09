@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useTranslation } from "@/contexts/LanguageContext";
 
 export default function RegisterFamily() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [email, setEmail] = useState("");
   const [familyName, setFamilyName] = useState("");
   const [parentName, setParentName] = useState("");
@@ -37,12 +37,13 @@ export default function RegisterFamily() {
       const response = await fetch("/api/register-family", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          email, 
-          familyName, 
+        body: JSON.stringify({
+          email,
+          familyName,
           parentName,
           parentType,
-          password 
+          password,
+          locale: locale === "ru" || locale === "en" ? locale : "ru",
         })
       });
 
