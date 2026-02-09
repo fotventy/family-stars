@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import { signOut } from "next-auth/react";
 import { redirect } from "next/navigation";
+import { useTranslation } from "@/contexts/LanguageContext";
 import { UserManagementModal } from "@/components/UserManagementModal";
 import { GiftManagementModal } from "@/components/GiftManagementModal";
 import { TaskManagementModal } from "@/components/TaskManagementModal";
@@ -49,6 +50,9 @@ interface UserGift {
 
 export default function ParentDashboard() {
   const { data: session, status } = useSession();
+  const { t, locale } = useTranslation();
+  const seedDefaultsRan = useRef(false);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
   const [activeTab, setActiveTab] = useState<"tasks" | "gifts" | "statistics" | "users" | "orders">("tasks");
   const [users, setUsers] = useState<User[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -74,8 +78,34 @@ export default function ParentDashboard() {
       fetchTasks();
       fetchGifts();
       fetchUserGifts();
+      const t = setTimeout(() => setInitialLoadDone(true), 2000);
+      return () => clearTimeout(t);
     }
   }, [status]);
+
+  useEffect(() => {
+    if (!initialLoadDone || status !== "authenticated" || seedDefaultsRan.current) return;
+    if (tasks.length > 0 || gifts.length > 0) return;
+    seedDefaultsRan.current = true;
+    (async () => {
+      try {
+        const res = await fetch("/api/seed-defaults", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ locale: locale === "ru" || locale === "en" ? locale : "ru" }),
+        });
+        if (res.ok) {
+          const data = await res.json();
+          if (data.seeded) {
+            fetchTasks();
+            fetchGifts();
+          }
+        }
+      } catch {
+        seedDefaultsRan.current = false;
+      }
+    })();
+  }, [initialLoadDone, status, tasks.length, gifts.length, locale]);
 
   const fetchUsers = async () => {
     try {
@@ -1177,35 +1207,35 @@ export default function ParentDashboard() {
               onClick={() => setActiveTab("tasks")}
             >
               <span>📋</span>
-              Задания
+              {t("parent.tabTasks")}
             </button>
             <button
               className={`tab-button ${activeTab === "gifts" ? "active" : ""} fortnite-text`}
               onClick={() => setActiveTab("gifts")}
             >
               <span>🎁</span>
-              Подарки
+              {t("parent.tabGifts")}
             </button>
             <button
               className={`tab-button ${activeTab === "users" ? "active" : ""} fortnite-text`}
               onClick={() => setActiveTab("users")}
             >
               <span>👨‍👩‍👧‍👦</span>
-              Семья
+              {t("parent.tabFamily")}
             </button>
             <button
               className={`tab-button ${activeTab === "orders" ? "active" : ""} fortnite-text`}
               onClick={() => setActiveTab("orders")}
             >
               <span>🛒</span>
-              Выборы
+              {t("parent.tabOrders")}
             </button>
             <button
               className={`tab-button ${activeTab === "statistics" ? "active" : ""} fortnite-text`}
               onClick={() => setActiveTab("statistics")}
             >
               <span>📊</span>
-              Статистика
+              {t("parent.tabStatistics")}
             </button>
           </div>
 
@@ -1215,14 +1245,14 @@ export default function ParentDashboard() {
               <div className="section-header">
                 <h2 className="section-title fortnite-title">
                   <span>📋</span>
-                  Управление заданиями
+                  {t("parent.manageTasks")}
                 </h2>
                 <button 
                   onClick={() => setIsTaskModalOpen(true)}
                   className="premium-button add"
                 >
                   <span>➕</span>
-                  Добавить задание
+                  {t("parent.addTask")}
                 </button>
               </div>
 
@@ -1232,6 +1262,8 @@ export default function ParentDashboard() {
                 onReorder={(items) => handleReorder('tasks', items)}
                 onEdit={(item) => handleEditTask(item as Task)}
                 onDelete={(itemId) => deleteTask(itemId)}
+                emptyTitle={t("parent.emptyTasks")}
+                emptyDescription={t("parent.emptyTasksHint")}
               />
     </div>
           )}
@@ -1242,16 +1274,16 @@ export default function ParentDashboard() {
               <div className="section-header">
                 <h2 className="section-title fortnite-title">
                   <span>🎁</span>
-                  Управление подарками
+                  {t("parent.manageGifts")}
                 </h2>
-        <button 
-          onClick={() => setIsGiftModalOpen(true)}
+                <button 
+                  onClick={() => setIsGiftModalOpen(true)}
                   className="premium-button add"
-        >
+                >
                   <span>➕</span>
-                  Добавить подарок
-        </button>
-      </div>
+                  {t("parent.addGift")}
+                </button>
+              </div>
 
               <DragDropList
                 items={gifts}
@@ -1259,6 +1291,8 @@ export default function ParentDashboard() {
                 onReorder={(items) => handleReorder('gifts', items)}
                 onEdit={(item) => handleEditGift(item as Gift)}
                 onDelete={(itemId) => deleteGift(itemId)}
+                emptyTitle={t("parent.emptyGifts")}
+                emptyDescription={t("parent.emptyGiftsHint")}
               />
             </div>
           )}
@@ -1269,14 +1303,14 @@ export default function ParentDashboard() {
               <div className="section-header">
                 <h2 className="section-title fortnite-title">
                   <span>👨‍👩‍👧‍👦</span>
-                  Управление семьёй
+                  {t("parent.manageFamily")}
                 </h2>
                 <button 
                   onClick={() => setIsFamilyModalOpen(true)}
                   className="premium-button add"
                 >
                   <span>👥</span>
-                  Управление семьёй
+                  {t("parent.manageFamily")}
                 </button>
               </div>
 
@@ -1290,7 +1324,7 @@ export default function ParentDashboard() {
                         </div>
                         <h3 className="card-title fortnite-text">{user.name}</h3>
                         <p className="card-description">
-                          {user.role === 'FAMILY_ADMIN' ? 'Админ' : user.role === 'PARENT' ? 'Родитель' : 'Ребёнок'} · Создан: {new Date(user.createdAt).toLocaleDateString('ru')}
+                          {user.role === 'FAMILY_ADMIN' ? t("parent.roleAdmin") : user.role === 'PARENT' ? t("parent.roleParent") : t("parent.roleChild")} · {t("parent.created")}: {new Date(user.createdAt).toLocaleDateString()}
                         </p>
                         <div className="card-actions" style={{justifyContent: 'center', marginTop: '12px'}}>
                           {user.role === 'CHILD' && (
@@ -1317,8 +1351,8 @@ export default function ParentDashboard() {
                 {users.length === 0 && (
                   <div className="empty-state">
                     <div className="empty-emoji">👨‍👩‍👧‍👦</div>
-                    <h3 className="empty-title">Добро пожаловать в семейную систему!</h3>
-                    <p className="empty-description">Нажмите "Управление семьёй" для настройки семьи</p>
+                    <h3 className="empty-title">{t("parent.welcomeFamily")}</h3>
+                    <p className="empty-description">{t("parent.welcomeFamilyHint")}</p>
                   </div>
                 )}
               </div>
@@ -1331,7 +1365,7 @@ export default function ParentDashboard() {
               <div className="section-header">
                 <h2 className="section-title fortnite-title">
                   <span>🛒</span>
-                  Выборы подарков
+                  {t("parent.giftChoices")}
                 </h2>
               </div>
 
@@ -1463,8 +1497,8 @@ export default function ParentDashboard() {
                 {userGifts.length === 0 && (
                   <div className="empty-state">
                     <div className="empty-emoji">🛒</div>
-                    <h3 className="empty-title">Пока нет выборов</h3>
-                    <p className="empty-description">Члены семьи ещё не выбирали подарки</p>
+                    <h3 className="empty-title">{t("parent.emptyOrders")}</h3>
+                    <p className="empty-description">{t("parent.emptyOrdersHint")}</p>
                   </div>
                 )}
               </div>

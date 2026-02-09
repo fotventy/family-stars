@@ -132,14 +132,25 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
           backdrop-filter: blur(20px);
           border: none;
           border-radius: 0;
-          padding: 40px 40px 40px 40px;
+          padding: 0;
           max-width: 480px;
           width: calc(100% - 40px);
+          max-height: 90vh;
           position: relative;
           overflow: hidden;
           box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
           animation: slideUp 0.4s ease;
           margin: 0 auto;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .modal-scroll-body {
+          overflow-y: auto;
+          overflow-x: hidden;
+          flex: 1;
+          min-height: 0;
+          padding: 24px 40px 40px;
         }
 
         @keyframes slideUp {
@@ -170,7 +181,8 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-bottom: 32px;
+          padding: 24px 40px 16px;
+          flex-shrink: 0;
         }
 
         .modal-title {
@@ -431,7 +443,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
               ✕
             </button>
           </div>
-
+          <div className="modal-scroll-body">
           <form onSubmit={handleSubmit} className="form-content">
             {error && (
               <div className="error-message">
@@ -582,6 +594,7 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
               </button>
             </div>
           </form>
+          </div>
         </div>
       </div>
     </>

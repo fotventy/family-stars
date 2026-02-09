@@ -1,5 +1,8 @@
 /**
- * Default tasks and gifts per locale. Created for each new family on registration.
+ * Default tasks and gifts per locale.
+ * They are not stored in a separate "template" table: they are written into the
+ * Task and Gift tables (with familyId) when a family is created (register-family)
+ * or when an existing family has no tasks/gifts (seed-defaults API).
  */
 
 export type DefaultTask = { title: string; description: string; points: number; emoji?: string };

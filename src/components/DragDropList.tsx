@@ -16,6 +16,8 @@ interface DragDropListProps {
   onEdit?: (item: DragDropItem) => void;
   onDelete?: (itemId: string) => void;
   renderItem?: (item: DragDropItem, isDragging: boolean) => React.ReactNode;
+  emptyTitle?: string;
+  emptyDescription?: string;
 }
 
 export const DragDropList: React.FC<DragDropListProps> = ({
@@ -24,7 +26,9 @@ export const DragDropList: React.FC<DragDropListProps> = ({
   onReorder,
   onEdit,
   onDelete,
-  renderItem
+  renderItem,
+  emptyTitle,
+  emptyDescription,
 }) => {
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [dragOverItem, setDragOverItem] = useState<string | null>(null);
@@ -395,13 +399,10 @@ export const DragDropList: React.FC<DragDropListProps> = ({
               {type === 'tasks' ? '📋' : '🏪'}
             </div>
             <h3 className="empty-title">
-              {type === 'tasks' ? 'Нет заданий' : 'Магазин подарков пуст'}
+              {emptyTitle ?? (type === 'tasks' ? 'No tasks' : 'Gift store is empty')}
             </h3>
             <p className="empty-description">
-              {type === 'tasks' 
-                ? 'Добавьте первые задания для детей'
-                : 'Добавьте первые подарки для мотивации детей'
-              }
+              {emptyDescription ?? (type === 'tasks' ? 'Add the first tasks for children' : 'Add the first gifts to motivate children')}
             </p>
           </div>
         )}

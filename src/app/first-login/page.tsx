@@ -3,8 +3,10 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 export default function FirstLogin() {
+  const { t } = useTranslation();
   const [token, setToken] = useState("");
   const [userName, setUserName] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -24,25 +26,25 @@ export default function FirstLogin() {
       setToken(tokenParam);
       setUserName(decodeURIComponent(userParam));
     } else {
-      setError("Неверная ссылка. Токен или имя пользователя не найдены.");
+      setError(t("firstLogin.invalidLink"));
     }
-  }, [searchParams]);
+  }, [searchParams, t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!newPassword || !confirmPassword) {
-      setError("Пожалуйста, заполните все поля");
+      setError(t("firstLogin.fillAll"));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError("Пароли не совпадают");
+      setError(t("firstLogin.passwordsMismatch"));
       return;
     }
 
     if (newPassword.length < 6) {
-      setError("Пароль должен содержать минимум 6 символов");
+      setError(t("firstLogin.passwordMin"));
       return;
     }
 
@@ -64,10 +66,10 @@ export default function FirstLogin() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Ошибка смены пароля");
+        throw new Error(data.error || t("firstLogin.changeError"));
       }
 
-      setSuccess("Пароль успешно изменён! Выполняется вход...");
+      setSuccess(t("firstLogin.success"));
       
       // Автоматически входим в систему с новым паролем
       const signInResult = await signIn("credentials", {
@@ -77,7 +79,7 @@ export default function FirstLogin() {
       });
 
       if (signInResult?.error) {
-        setError("Ошибка автоматического входа. Попробуйте войти вручную на странице входа.");
+        setError(t("firstLogin.autoLoginError"));
         setTimeout(() => router.push("/login"), 3000);
       } else {
         // Сначала предлагаем усилить защиту (2FA), затем — в кабинет
@@ -85,7 +87,7 @@ export default function FirstLogin() {
       }
       
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Ошибка смены пароля");
+      setError(error instanceof Error ? error.message : t("firstLogin.changeError"));
     } finally {
       setLoading(false);
     }
@@ -95,13 +97,13 @@ export default function FirstLogin() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-red-500 to-red-700 flex items-center justify-center p-6">
         <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">❌ Ошибка</h1>
-          <p className="text-gray-700 mb-6">{error || "Неверная ссылка для первого входа"}</p>
+          <h1 className="text-2xl font-bold text-red-600 mb-4">❌ {t("firstLogin.errorTitle")}</h1>
+          <p className="text-gray-700 mb-6">{error || t("firstLogin.invalidLinkFallback")}</p>
           <button
             onClick={() => router.push("/login")}
             className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg"
           >
-            Перейти к странице входа
+            {t("firstLogin.goToLogin")}
           </button>
         </div>
       </div>
@@ -277,11 +279,10 @@ export default function FirstLogin() {
         <div className="premium-card">
           <div>
             <h1 className="premium-title">
-              🔐 Первый вход
+              🔐 {t("firstLogin.title")}
             </h1>
             <p className="welcome-text">
-              Добро пожаловать, <strong>{userName}</strong>!<br/>
-              Создайте новый пароль для входа в систему
+              {t("firstLogin.welcome").replace("{name}", userName)}
             </p>
           </div>
 
@@ -300,7 +301,7 @@ export default function FirstLogin() {
           <form onSubmit={handleSubmit}>
             <div className="form-group">
               <label htmlFor="newPassword" className="form-label">
-                Новый пароль
+                {t("firstLogin.newPassword")}
               </label>
               <input
                 type="password"
@@ -308,7 +309,7 @@ export default function FirstLogin() {
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 className="form-input"
-                placeholder="Введите новый пароль"
+                placeholder={t("firstLogin.newPasswordPlaceholder")}
                 required
                 minLength={6}
               />
@@ -316,7 +317,7 @@ export default function FirstLogin() {
 
             <div className="form-group">
               <label htmlFor="confirmPassword" className="form-label">
-                Подтвердите пароль
+                {t("firstLogin.confirmPassword")}
               </label>
               <input
                 type="password"
@@ -324,7 +325,7 @@ export default function FirstLogin() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className="form-input"
-                placeholder="Повторите новый пароль"
+                placeholder={t("firstLogin.confirmPasswordPlaceholder")}
                 required
                 minLength={6}
               />
@@ -335,7 +336,7 @@ export default function FirstLogin() {
               disabled={loading}
               className="premium-button primary"
             >
-              {loading ? "Смена пароля..." : "Сменить пароль и войти"}
+              {loading ? t("firstLogin.submitting") : t("firstLogin.submit")}
             </button>
           </form>
         </div>
