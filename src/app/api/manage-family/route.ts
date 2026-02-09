@@ -118,7 +118,7 @@ export async function POST(request: Request) {
     }
 
     const userId = (session as any).user.id;
-    const { name, role, gender, email } = await request.json();
+    const { name, role, gender, email, locale } = await request.json();
 
     if (!name || !role || !gender) {
       return NextResponse.json(
@@ -192,6 +192,9 @@ export async function POST(request: Request) {
     const firstLoginUrl = `${baseUrl}/first-login?token=${firstLoginToken}&user=${encodeURIComponent(name)}`;
     const expiresInDays = 7;
 
+    const supportedLocales = ["en", "ru", "de", "fr", "it", "es", "zh", "pt", "ja", "ko"] as const;
+    const inviteLocale = supportedLocales.includes(locale) ? locale : "en";
+
     let emailSent = false;
     if (emailStr) {
       const sendResult = await sendInviteEmail({
@@ -200,6 +203,7 @@ export async function POST(request: Request) {
         familyName: admin.adminFamily.name,
         firstLoginUrl,
         expiresInDays,
+        locale: inviteLocale,
       });
       emailSent = sendResult.ok;
     }

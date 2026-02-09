@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Modal } from "./Modal";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 interface FamilyMember {
   id: string;
@@ -27,6 +28,7 @@ interface Props {
 }
 
 export default function FamilyManagementModal({ isOpen, onClose }: Props) {
+  const { locale } = useTranslation();
   const [family, setFamily] = useState<Family | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -87,6 +89,7 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
           role: newMemberRole,
           gender: newMemberGender,
           email: newMemberEmail.trim() || undefined,
+          locale,
         }),
       });
 

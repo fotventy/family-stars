@@ -68,6 +68,15 @@ const de: Messages = {
   "forgot.checkEmailHint": "Falls ein Konto existiert, wurde ein Link gesendet.",
   "forgot.backToLogin": "Zurück zur Anmeldung",
 
+  "email.invite.subject": "Einladung zu {{familyName}} — Family Stars",
+  "email.invite.greeting": "Hallo{{name}}!",
+  "email.invite.greetingNoName": "Hallo!",
+  "email.invite.intro": "Sie wurden eingeladen, {{familyName}} in Family Stars beizutreten.",
+  "email.invite.cta": "Klicken Sie auf den Link unten, um Ihr Passwort zu setzen. Der Link ist {{days}} Tage gültig.",
+  "email.invite.button": "Familie beitreten →",
+  "email.invite.linkHint": "Wenn der Button nicht funktioniert, kopieren Sie den Link: {{url}}",
+  "email.invite.footer": "Diese E-Mail wurde automatisch gesendet. Wenn Sie keine Einladung erwartet haben, ignorieren Sie sie.",
+
   "register.title": "Familie erstellen",
   "register.subtitle": "Neue Familie anlegen",
   "register.allRequired": "Alle Felder sind Pflichtfelder",

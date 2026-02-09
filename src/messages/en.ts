@@ -72,6 +72,16 @@ const en: Messages = {
   "forgot.checkEmailHint": "If an account exists with that email, we sent a password reset link.",
   "forgot.backToLogin": "Back to login",
 
+  // email (invite)
+  "email.invite.subject": "Invitation to {{familyName}} — Family Stars",
+  "email.invite.greeting": "Hello{{name}}!",
+  "email.invite.greetingNoName": "Hello!",
+  "email.invite.intro": "You were invited to join {{familyName}} in Family Stars.",
+  "email.invite.cta": "Click the link below to set your password and join. The link is valid for {{days}} days.",
+  "email.invite.button": "Join family →",
+  "email.invite.linkHint": "If the button doesn't work, copy the link: {{url}}",
+  "email.invite.footer": "This email was sent automatically. If you didn't expect an invitation, you can ignore it.",
+
   // register
   "register.title": "Create family",
   "register.subtitle": "Create a new family",

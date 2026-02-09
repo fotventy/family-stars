@@ -68,6 +68,15 @@ const zh: Messages = {
   "forgot.checkEmailHint": "如账户存在，我们已发送重置链接。",
   "forgot.backToLogin": "返回登录",
 
+  "email.invite.subject": "邀请加入 {{familyName}} — Family Stars",
+  "email.invite.greeting": "你好{{name}}！",
+  "email.invite.greetingNoName": "你好！",
+  "email.invite.intro": "您被邀请加入 Family Stars 的家庭 {{familyName}}。",
+  "email.invite.cta": "请点击下方链接设置密码并加入。链接有效期为 {{days}} 天。",
+  "email.invite.button": "加入家庭 →",
+  "email.invite.linkHint": "若按钮无效，请复制链接：{{url}}",
+  "email.invite.footer": "此邮件为自动发送。如未预期此邀请，请忽略。",
+
   "register.title": "创建家庭",
   "register.subtitle": "创建新家庭",
   "register.allRequired": "请填写所有必填项",

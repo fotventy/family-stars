@@ -73,6 +73,16 @@ const ru: Messages = {
   "forgot.checkEmailHint": "Если аккаунт с таким email есть, мы отправили ссылку для сброса пароля.",
   "forgot.backToLogin": "Назад к входу",
 
+  // email (invite)
+  "email.invite.subject": "Приглашение в семью «{{familyName}}» — Семейные Звёздочки",
+  "email.invite.greeting": "Здравствуйте{{name}}!",
+  "email.invite.greetingNoName": "Здравствуйте!",
+  "email.invite.intro": "Вас пригласили в семью {{familyName}} в приложении Семейные Звёздочки.",
+  "email.invite.cta": "Перейдите по ссылке ниже, чтобы задать пароль и войти в семью. Ссылка действительна {{days}} дней.",
+  "email.invite.button": "Войти в семью →",
+  "email.invite.linkHint": "Если кнопка не работает, скопируйте ссылку: {{url}}",
+  "email.invite.footer": "Это письмо отправлено автоматически. Если вы не ожидали приглашения, просто проигнорируйте его.",
+
   // register
   "register.title": "Создать семью",
   "register.subtitle": "Создание новой семьи",

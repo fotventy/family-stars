@@ -68,6 +68,15 @@ const ko: Messages = {
   "forgot.checkEmailHint": "계정이 있으면 링크를 보냈습니다.",
   "forgot.backToLogin": "로그인으로 돌아가기",
 
+  "email.invite.subject": "{{familyName}} 초대 — Family Stars",
+  "email.invite.greeting": "안녕하세요{{name}}님!",
+  "email.invite.greetingNoName": "안녕하세요!",
+  "email.invite.intro": "Family Stars에서 {{familyName}}에 초대되었습니다.",
+  "email.invite.cta": "아래 링크를 클릭하여 비밀번호를 설정하고 참여하세요. 링크는 {{days}}일 동안 유효합니다.",
+  "email.invite.button": "가족 참여 →",
+  "email.invite.linkHint": "버튼이 작동하지 않으면 링크를 복사하세요: {{url}}",
+  "email.invite.footer": "이 이메일은 자동 발송되었습니다. 초대를 예상하지 않으셨다면 무시하세요.",
+
   "register.title": "가족 만들기",
   "register.subtitle": "새 가족 만들기",
   "register.allRequired": "모든 항목을 입력해 주세요",

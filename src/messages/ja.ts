@@ -68,6 +68,15 @@ const ja: Messages = {
   "forgot.checkEmailHint": "アカウントが存在する場合、リンクを送信しました。",
   "forgot.backToLogin": "ログインに戻る",
 
+  "email.invite.subject": "{{familyName}} への招待 — Family Stars",
+  "email.invite.greeting": "こんにちは{{name}}さん！",
+  "email.invite.greetingNoName": "こんにちは！",
+  "email.invite.intro": "Family Stars の {{familyName}} に招待されました。",
+  "email.invite.cta": "下のリンクからパスワードを設定して参加してください。リンクの有効期限は {{days}} 日です。",
+  "email.invite.button": "家族に参加 →",
+  "email.invite.linkHint": "ボタンが動作しない場合はリンクをコピーしてください：{{url}}",
+  "email.invite.footer": "このメールは自動送信です。心当たりがない場合は無視してください。",
+
   "register.title": "家族を作成",
   "register.subtitle": "新しい家族を作成",
   "register.allRequired": "すべての項目を入力してください",
