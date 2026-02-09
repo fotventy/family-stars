@@ -15,7 +15,7 @@ import FamilyManagementModal from "@/components/FamilyManagementModal";
 interface User {
   id: string;
   name: string;
-  role: "PARENT" | "CHILD";
+  role: "PARENT" | "CHILD" | "FAMILY_ADMIN";
   createdAt: string;
 }
 
