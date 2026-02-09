@@ -24,20 +24,19 @@ export async function POST(request: Request) {
     const { locale } = await request.json().catch(() => ({}));
     const lang = typeof locale === "string" ? locale : "en";
 
-    const [existingTasks, existingGifts] = await Promise.all([
-      prisma.task.count({ where: { familyId } }),
-      prisma.gift.count({ where: { familyId } }),
-    ]);
-
-    if (existingTasks > 0 && existingGifts > 0) {
-      return NextResponse.json({ success: true, seeded: false, message: "Already has tasks and gifts" });
-    }
-
-    const defaultTasks = getDefaultTasks(lang);
-    const defaultGifts = getDefaultGifts(lang);
-
-    if (existingTasks === 0) {
-      await prisma.task.createMany({
+    // Use a transaction with a lock so only one request can seed this family (avoid RU+EN duplicates)
+    const result = await prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT 1 FROM "Family" WHERE id = ${familyId} FOR UPDATE`;
+      const [existingTasks, existingGifts] = await Promise.all([
+        tx.task.count({ where: { familyId } }),
+        tx.gift.count({ where: { familyId } }),
+      ]);
+      if (existingTasks > 0 || existingGifts > 0) {
+        return { seeded: false };
+      }
+      const defaultTasks = getDefaultTasks(lang);
+      const defaultGifts = getDefaultGifts(lang);
+      await tx.task.createMany({
         data: defaultTasks.map((t, i) => ({
           familyId,
           title: t.title,
@@ -48,9 +47,7 @@ export async function POST(request: Request) {
           isActive: true,
         })),
       });
-    }
-    if (existingGifts === 0) {
-      await prisma.gift.createMany({
+      await tx.gift.createMany({
         data: defaultGifts.map((g, i) => ({
           familyId,
           title: g.title,
@@ -61,9 +58,10 @@ export async function POST(request: Request) {
           isActive: true,
         })),
       });
-    }
+      return { seeded: true };
+    });
 
-    return NextResponse.json({ success: true, seeded: true });
+    return NextResponse.json({ success: true, seeded: result.seeded, message: result.seeded ? undefined : "Already has tasks or gifts" });
   } catch (error) {
     console.error("Seed defaults error:", error);
     return NextResponse.json({ error: "Seed failed" }, { status: 500 });

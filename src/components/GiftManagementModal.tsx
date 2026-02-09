@@ -1,5 +1,8 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { Modal } from './Modal';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 interface GiftManagementModalProps {
   isOpen: boolean;
@@ -20,6 +23,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
   onUpdateGift,
   onDeleteGift
 }) => {
+  const { t } = useTranslation();
   const [newGiftTitle, setNewGiftTitle] = useState('');
   const [newGiftDescription, setNewGiftDescription] = useState('');
   const [newGiftPoints, setNewGiftPoints] = useState('');
@@ -71,7 +75,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
     onClose();
   };
 
-  const modalTitle = editingGift ? "✏️ Редактирование подарка" : "🎁 Новый подарок";
+  const modalTitle = editingGift ? `✏️ ${t("gifts.editGift")}` : `🎁 ${t("gifts.newGift")}`;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={modalTitle}>
@@ -89,7 +93,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                 textShadow: '0 1px 3px rgba(0,0,0,0.3)',
                 textAlign: 'left'
               }}>
-                🏷️ Название подарка
+                🏷️ {t("gifts.giftName")}
               </label>
               <input 
                 type="text" 
@@ -111,7 +115,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                   display: 'block',
                   outline: 'none'
                 }}
-                placeholder="Например: Час игры в Minecraft"
+                placeholder={t("gifts.placeholderTitle")}
                 required 
                 onFocus={(e) => {
                   e.target.style.borderColor = 'rgba(255, 255, 255, 0.5)';
@@ -137,7 +141,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                 textShadow: '0 1px 3px rgba(0,0,0,0.3)',
                 textAlign: 'left'
               }}>
-                📝 Описание
+                📝 {t("gifts.description")}
               </label>
               <textarea 
                 value={newGiftDescription}
@@ -160,7 +164,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                   height: '80px',
                   resize: 'none'
                 }}
-                placeholder="Дополнительная информация о подарке"
+                placeholder={t("gifts.placeholderDescription")}
                 rows={3}
                 onFocus={(e) => {
                   e.target.style.borderColor = 'rgba(255, 255, 255, 0.5)';
@@ -186,7 +190,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                 textShadow: '0 1px 3px rgba(0,0,0,0.3)',
                 textAlign: 'left'
               }}>
-                ⭐ Стоимость в звёздах
+                ⭐ {t("common.costInStars")}
               </label>
               <input 
                 type="number" 
@@ -208,7 +212,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                   display: 'block',
                   outline: 'none'
                 }}
-                placeholder="Количество звёзд"
+                placeholder={t("common.pointsPlaceholder")}
                 min="1"
                 required 
                 onFocus={(e) => {
@@ -237,7 +241,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                 textShadow: '0 1px 3px rgba(0,0,0,0.3)',
                 textAlign: 'left'
               }}>
-                🎁 Иконка подарка (необязательно)
+                🎁 {t("gifts.giftIconOptional")}
               </label>
               <div style={{ 
                 display: 'grid', 
@@ -289,7 +293,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                   display: 'block',
                   outline: 'none'
                 }}
-                placeholder="Или введите свой эмодзи"
+                placeholder={t("gifts.placeholderEmoji")}
                 onFocus={(e) => {
                   e.target.style.borderColor = 'rgba(255, 255, 255, 0.5)';
                   e.target.style.background = 'rgba(255, 255, 255, 0.15)';
@@ -318,7 +322,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                     cursor: 'pointer'
                   }}
                 >
-                  ❌ Очистить
+                  ❌ {t("gifts.clear")}
                 </button>
               )}
             </div>
@@ -328,7 +332,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
               className="game-button"
               style={{ width: '100%' }}
             >
-              ➕ Добавить подарок
+              ➕ {t("gifts.addGift")}
             </button>
           </form>
         )}
@@ -346,7 +350,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                 textShadow: '0 1px 3px rgba(0,0,0,0.3)',
                 textAlign: 'left'
               }}>
-                🏷️ Название подарка
+                🏷️ {t("gifts.giftName")}
               </label>
               <input 
                 type="text" 
@@ -368,7 +372,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                   display: 'block',
                   outline: 'none'
                 }}
-                placeholder="Например: Час игры в Minecraft"
+                placeholder={t("gifts.placeholderTitle")}
                 required 
                 onFocus={(e) => {
                   e.target.style.borderColor = 'rgba(255, 255, 255, 0.5)';
@@ -394,7 +398,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                 textShadow: '0 1px 3px rgba(0,0,0,0.3)',
                 textAlign: 'left'
               }}>
-                📝 Описание
+                📝 {t("gifts.description")}
               </label>
               <textarea 
                 value={editDescription}
@@ -443,7 +447,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                 textShadow: '0 1px 3px rgba(0,0,0,0.3)',
                 textAlign: 'left'
               }}>
-                ⭐ Стоимость в звёздах
+                ⭐ {t("common.costInStars")}
               </label>
               <input 
                 type="number" 
@@ -465,7 +469,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                   display: 'block',
                   outline: 'none'
                 }}
-                placeholder="Количество звёзд"
+                placeholder={t("common.pointsPlaceholder")}
                 min="1"
                 required 
                 onFocus={(e) => {
@@ -494,7 +498,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                 textShadow: '0 1px 3px rgba(0,0,0,0.3)',
                 textAlign: 'left'
               }}>
-                🎁 Иконка подарка (необязательно)
+                🎁 {t("gifts.giftIconOptional")}
               </label>
               <div style={{ 
                 display: 'grid', 
@@ -546,7 +550,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                   display: 'block',
                   outline: 'none'
                 }}
-                placeholder="Или введите свой эмодзи"
+                placeholder={t("gifts.placeholderEmoji")}
                 onFocus={(e) => {
                   e.target.style.borderColor = 'rgba(255, 255, 255, 0.5)';
                   e.target.style.background = 'rgba(255, 255, 255, 0.15)';
@@ -575,7 +579,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                     cursor: 'pointer'
                   }}
                 >
-                  ❌ Очистить
+                  ❌ {t("gifts.clear")}
                 </button>
               )}
             </div>
@@ -586,7 +590,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                 className="game-button"
                 style={{ flex: 1 }}
               >
-                💾 Сохранить
+                💾 {t("gifts.save")}
               </button>
               <button 
                 type="button"
@@ -597,7 +601,7 @@ export const GiftManagementModal: React.FC<GiftManagementModalProps> = ({
                   background: 'linear-gradient(135deg, #6b7280 0%, #4b5563 100%)'
                 }}
               >
-                ❌ Отмена
+                ❌ {t("tasks.cancel")}
               </button>
             </div>
           </form>

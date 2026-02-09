@@ -1403,7 +1403,7 @@ export default function ParentDashboard() {
                           )}
                           <div className="points-badge">
                             <span>⭐</span>
-                            {userGift.gift.points} звёзд
+                            {userGift.gift.points} {t("common.stars")}
                           </div>
 
                         </div>

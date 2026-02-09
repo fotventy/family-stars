@@ -426,6 +426,10 @@ export default function Login() {
                   </div>
                 )}
 
+                <p className="login-password-hint">
+                  {t("login.passwordHint")}
+                </p>
+
                 <div className="form-group">
                   <label htmlFor="password" className="form-label">
                     🔑 {t("login.password")}

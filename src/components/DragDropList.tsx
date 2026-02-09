@@ -1,4 +1,7 @@
+"use client";
+
 import React, { useState } from 'react';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 interface DragDropItem {
   id: string;
@@ -30,6 +33,7 @@ export const DragDropList: React.FC<DragDropListProps> = ({
   emptyTitle,
   emptyDescription,
 }) => {
+  const { t } = useTranslation();
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
   const [dragOverItem, setDragOverItem] = useState<string | null>(null);
 
@@ -144,7 +148,7 @@ export const DragDropList: React.FC<DragDropListProps> = ({
         )}
         <div className="points-badge" style={{marginBottom: '16px'}}>
           <span>⭐</span>
-          {item.points} звёзд
+          {item.points} {t("common.stars")}
         </div>
         <div className="card-actions">
           {onEdit && (
@@ -156,7 +160,7 @@ export const DragDropList: React.FC<DragDropListProps> = ({
               className="premium-button edit"
             >
               <span>✏️</span>
-              Изменить
+              {t("common.edit")}
             </button>
           )}
           {onDelete && (
@@ -168,7 +172,7 @@ export const DragDropList: React.FC<DragDropListProps> = ({
               className="premium-button delete"
             >
               <span>🗑️</span>
-              Удалить
+              {t("common.delete")}
             </button>
           )}
         </div>

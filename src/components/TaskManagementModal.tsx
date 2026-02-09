@@ -1,5 +1,8 @@
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { Modal } from './Modal';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 interface TaskManagementModalProps {
   isOpen: boolean;
@@ -22,6 +25,7 @@ export const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
   onUpdateTask,
   onDeleteTask
 }) => {
+  const { t } = useTranslation();
   const [newTaskTitle, setNewTaskTitle] = useState('');
   const [newTaskDescription, setNewTaskDescription] = useState('');
   const [newTaskPoints, setNewTaskPoints] = useState('');
@@ -86,7 +90,7 @@ export const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
     onClose();
   };
 
-  const modalTitle = editingTask ? "✏️ Редактирование задания" : "➕ Новое задание";
+  const modalTitle = editingTask ? `✏️ ${t("tasks.editTask")}` : `➕ ${t("tasks.newTask")}`;
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={modalTitle}>
@@ -104,7 +108,7 @@ export const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
                 textShadow: '0 1px 3px rgba(0,0,0,0.3)',
                 textAlign: 'left'
               }}>
-                🏷️ Название задания
+                🏷️ {t("tasks.taskName")}
               </label>
               <input 
                 type="text" 
@@ -126,7 +130,7 @@ export const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
                   display: 'block',
                   outline: 'none'
                 }}
-                placeholder="Например: Сделать утреннюю зарядку"
+                placeholder={t("tasks.placeholderTitle")}
                 required 
               />
             </div>
@@ -141,7 +145,7 @@ export const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
                 textShadow: '0 1px 3px rgba(0,0,0,0.3)',
                 textAlign: 'left'
               }}>
-                📝 Описание
+                📝 {t("tasks.description")}
               </label>
               <textarea 
                 value={newTaskDescription}
@@ -164,7 +168,7 @@ export const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
                   height: '80px',
                   resize: 'none'
                 }}
-                placeholder="Дополнительная информация о задании"
+                placeholder={t("tasks.placeholderDescription")}
                 rows={3}
               />
             </div>
@@ -179,7 +183,7 @@ export const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
                 textShadow: '0 1px 3px rgba(0,0,0,0.3)',
                 textAlign: 'left'
               }}>
-                ⭐ Количество звёзд
+                ⭐ {t("common.pointsLabel")}
               </label>
               <input 
                 type="number" 
@@ -216,7 +220,7 @@ export const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
                 marginBottom: '12px',
                 textShadow: '0 1px 3px rgba(0,0,0,0.3)'
               }}>
-                😊 Выберите эмодзи
+                😊 {t("tasks.chooseEmoji")}
               </label>
               <div style={{ 
                 display: 'flex', 
@@ -273,7 +277,7 @@ export const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
                   transition: 'all 0.2s ease'
                 }}
               >
-                Отмена
+                {t("tasks.cancel")}
               </button>
               <button
                 type="submit"
@@ -287,7 +291,7 @@ export const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
                   cursor: (!newTaskTitle.trim() || !newTaskPoints) ? 'not-allowed' : 'pointer'
                 }}
               >
-                ✨ Создать задание
+                ✨ {t("tasks.createTask")}
               </button>
             </div>
           </form>
@@ -306,7 +310,7 @@ export const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
                 textShadow: '0 1px 3px rgba(0,0,0,0.3)',
                 textAlign: 'left'
               }}>
-                🏷️ Название задания
+                🏷️ {t("tasks.taskName")}
               </label>
               <input 
                 type="text" 
@@ -343,7 +347,7 @@ export const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
                 textShadow: '0 1px 3px rgba(0,0,0,0.3)',
                 textAlign: 'left'
               }}>
-                📝 Описание
+                📝 {t("tasks.description")}
               </label>
               <textarea 
                 value={editDescription}
@@ -381,7 +385,7 @@ export const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
                 textShadow: '0 1px 3px rgba(0,0,0,0.3)',
                 textAlign: 'left'
               }}>
-                ⭐ Количество звёзд
+                ⭐ {t("common.pointsLabel")}
               </label>
               <input 
                 type="number" 
@@ -418,7 +422,7 @@ export const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
                 marginBottom: '12px',
                 textShadow: '0 1px 3px rgba(0,0,0,0.3)'
               }}>
-                😊 Выберите эмодзи
+                😊 {t("tasks.chooseEmoji")}
               </label>
               <div style={{ 
                 display: 'flex', 
@@ -475,7 +479,7 @@ export const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
                   transition: 'all 0.2s ease'
                 }}
               >
-                Отмена
+                {t("tasks.cancel")}
               </button>
               <button
                 type="submit"
@@ -489,89 +493,10 @@ export const TaskManagementModal: React.FC<TaskManagementModalProps> = ({
                   cursor: (!editTitle.trim() || !editPoints) ? 'not-allowed' : 'pointer'
                 }}
               >
-                💾 Сохранить изменения
+                💾 {t("tasks.saveChanges")}
               </button>
             </div>
           </form>
-        )}
-
-        {/* Список существующих заданий */}
-        {!editingTask && tasks.length > 0 && (
-          <div style={{ marginTop: '32px' }}>
-            <h3 style={{ 
-              fontSize: '20px', 
-              fontWeight: 'bold', 
-              marginBottom: '20px',
-              color: 'white',
-              textShadow: '0 2px 4px rgba(0,0,0,0.3)'
-            }}>
-              📋 Существующие задания
-            </h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-              {tasks.map((task) => (
-                <div
-                  key={task.id}
-                  style={{
-                    background: 'rgba(255, 255, 255, 0.1)',
-                    backdropFilter: 'blur(10px)',
-                    border: 'none',
-                    borderRadius: '0',
-                    padding: '20px',
-                    color: 'white',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}
-                >
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-                      <span style={{ fontSize: '24px' }}>
-                        {task.emoji || getTaskEmoji(task.title)}
-                      </span>
-                      <h4 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0 }}>
-                        {task.title}
-                      </h4>
-                    </div>
-                    {task.description && (
-                      <p style={{ fontSize: '14px', opacity: 0.8, margin: '4px 0' }}>
-                        {task.description}
-                      </p>
-                    )}
-                    <div style={{ 
-                      background: 'linear-gradient(135deg, #FFD700, #FFA500)',
-                      color: 'white',
-                      padding: '4px 12px',
-                      borderRadius: '0',
-                      fontSize: '14px',
-                      fontWeight: 'bold',
-                      display: 'inline-block',
-                      marginTop: '8px'
-                    }}>
-                      ⭐ {task.points} звёзд
-                    </div>
-                  </div>
-                  
-                  <div style={{ display: 'flex', gap: '8px', marginLeft: '16px' }}>
-                    <button
-                      onClick={() => onDeleteTask(task.id)}
-                      style={{
-                        padding: '8px 16px',
-                        background: 'linear-gradient(135deg, #DC3545 0%, #C82333 100%)',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '0',
-                        fontSize: '14px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      🗑️ Удалить
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         )}
       </div>
     </Modal>

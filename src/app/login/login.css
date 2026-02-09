@@ -155,8 +155,9 @@
   padding: 40px;
   max-width: 400px;
   width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
   position: relative;
-  overflow: hidden;
   box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
   animation: login-slideUp 0.4s ease;
 }
@@ -208,6 +209,14 @@
 .login-page-root .close-button:hover {
   background: rgba(255, 69, 58, 1);
   transform: scale(1.1);
+}
+
+.login-page-root .login-password-hint {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 14px;
+  margin-bottom: 16px;
+  text-align: center;
+  line-height: 1.4;
 }
 
 .login-page-root .form-group {

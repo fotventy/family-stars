@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { signOut } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { ProfileModal } from "@/components/ProfileModal";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 interface Task {
   id: string;
@@ -30,6 +31,7 @@ interface UserTask {
 }
 
 export default function ChildDashboard() {
+  const { t } = useTranslation();
   const { data: session, status } = useSession();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [gifts, setGifts] = useState<Gift[]>([]);
@@ -120,8 +122,9 @@ export default function ChildDashboard() {
         await fetchUserPoints();
         // Найдем задание чтобы показать его название в уведомлении
         const task = tasks.find(t => t.id === taskId);
-        const taskName = task?.title || "Задание";
-        showNotification(`${taskName} выполнено! +${task?.points || 0} звёзд ⭐`, "success");
+        const taskName = task?.title || "";
+        const points = task?.points || 0;
+        showNotification(t("child.taskCompleted").replace("{{taskName}}", taskName).replace("{{points}}", String(points)) + " ⭐", "success");
       } else {
         const error = await response.json();
         showNotification(error.error || "Ошибка при выполнении задания", "error");
@@ -713,7 +716,7 @@ export default function ChildDashboard() {
             </h1>
             <div className="star-counter">
               <span style={{fontSize: '32px'}}>⭐</span>
-              {userPoints} звёзд
+              {userPoints} {t("common.stars")}
             </div>
             <div className="header-buttons">
               <button 
@@ -764,7 +767,7 @@ export default function ChildDashboard() {
                         <h3 className="card-title fortnite-text">{task.title}</h3>
                         <div className="points-badge">
                           <span>⭐</span>
-                          +{task.points} звёзд
+                          +{task.points} {t("common.stars")}
                         </div>
                       </div>
                       
@@ -801,7 +804,7 @@ export default function ChildDashboard() {
                         <h3 className="card-title fortnite-text">{gift.title}</h3>
                         <div className="points-badge">
                           <span>⭐</span>
-                          {gift.points} звёзд
+                          {gift.points} {t("common.stars")}
                         </div>
                       </div>
 
@@ -819,7 +822,7 @@ export default function ChildDashboard() {
                             cursor: canOrder ? 'pointer' : 'not-allowed'
                           }}
                         >
-                          {canOrder ? "🛒 Выбрать подарок!" : "❌ Недостаточно звёзд"}
+                          {canOrder ? `🛒 ${t("child.chooseGift")}` : `❌ ${t("child.notEnoughStars")}`}
                         </button>
                       </div>
                     </div>
