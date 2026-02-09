@@ -31,6 +31,8 @@ const en: Messages = {
 
   // login
   "login.title": "Family login",
+  "login.email": "Email",
+  "login.emailPlaceholder": "your@email.com",
   "login.enterCode": "Enter your family code",
   "login.familyCode": "Family code",
   "login.familyCodePlaceholder": "Enter family code",
@@ -38,6 +40,9 @@ const en: Messages = {
   "login.entering": "Signing in...",
   "login.orSignInWith": "or sign in with",
   "login.tipCode": "Enter your family code to sign in. Get the code from your family admin",
+  "login.forgotPassword": "Forgot password?",
+  "login.signInWithFamilyCode": "Sign in with family code",
+  "login.signInWithEmail": "Sign in with email",
   "login.registerFamily": "Register family",
   "login.selectUser": "Choose who’s signing in",
   "login.changeCode": "Change family code",
@@ -54,6 +59,18 @@ const en: Messages = {
   "login.roleMom": "Mom",
   "login.roleSon": "Son",
   "login.roleDaughter": "Daughter",
+
+  "forgot.title": "Reset password",
+  "forgot.subtitle": "Enter your email and we'll send you a reset link",
+  "forgot.email": "Email",
+  "forgot.emailPlaceholder": "your@email.com",
+  "forgot.emailRequired": "Email is required",
+  "forgot.sendLink": "Send reset link",
+  "forgot.sending": "Sending...",
+  "forgot.error": "Something went wrong. Try again.",
+  "forgot.checkEmail": "Check your email",
+  "forgot.checkEmailHint": "If an account exists with that email, we sent a password reset link.",
+  "forgot.backToLogin": "Back to login",
 
   // register
   "register.title": "Create family",

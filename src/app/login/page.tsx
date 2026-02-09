@@ -30,6 +30,8 @@ export default function Login() {
   const { t } = useTranslation();
   const searchParams = useSearchParams();
   const router = useRouter();
+  const [loginMode, setLoginMode] = useState<"email" | "familyCode">("email");
+  const [email, setEmail] = useState("");
   const [step, setStep] = useState(1);
   const [familyCode, setFamilyCode] = useState("");
   const [familyName, setFamilyName] = useState("");
@@ -39,11 +41,12 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
 
-  // Family code from invite link — prefill and load users
+  // Family code from invite link — switch to family code mode and load users
   useEffect(() => {
     const code = searchParams.get("familyCode") ?? searchParams.get("code") ?? searchParams.get("invite");
     if (code?.trim()) {
       setFamilyCode(code.trim());
+      setLoginMode("familyCode");
       setError("");
       setLoading(true);
       fetchUsers(code.trim()).finally(() => setLoading(false));
@@ -153,6 +156,32 @@ export default function Login() {
     setStep(2);
   };
 
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email.trim() || !password) {
+      setError(t("login.errorFamilyCode")); // reuse or add specific message
+      return;
+    }
+    setError("");
+    setLoading(true);
+    try {
+      const result = await signIn("credentials", {
+        redirect: false,
+        email: email.trim().toLowerCase(),
+        password,
+      });
+      if (result?.error) {
+        setError(t("login.errorWrongPassword"));
+      } else {
+        router.push("/");
+      }
+    } catch {
+      setError(t("login.errorLogin"));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedUser) return;
@@ -211,105 +240,120 @@ export default function Login() {
   return (
     <div className="login-page-root premium-login-container">
         <div className="login-card">
-          {/* STEP 1: FAMILY CODE */}
-          {step === 1 && (
+          {/* STEP 1: Email + Password (default) or Family code */}
+          {step === 1 && loginMode === "email" && (
             <>
               <div className="login-header">
                 <div className="login-emoji">🏠</div>
                 <h1 className="login-title fortnite-title">{t("login.title")}</h1>
                 <p className="login-subtitle">
-                  {t("login.enterCode")}
+                  {t("login.email")} &amp; {t("login.password")}
                 </p>
               </div>
 
-              <form onSubmit={handleFamilyCodeSubmit}>
+              <form onSubmit={handleEmailLogin}>
                 {error && (
-                  <div className="error-message">
-                    ❌ {error}
-                  </div>
+                  <div className="error-message">❌ {error}</div>
                 )}
-
                 <div className="form-group">
-                  <label htmlFor="familyCode" className="form-label">
-                    🔑 {t("login.familyCode")}
-                  </label>
+                  <label htmlFor="email" className="form-label">📧 {t("login.email")}</label>
                   <input
-                    id="familyCode"
-                    type="text"
-                    value={familyCode}
-                    onChange={(e) => setFamilyCode(e.target.value)}
+                    id="email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="form-input"
-                    placeholder={t("login.familyCodePlaceholder")}
+                    placeholder={t("login.emailPlaceholder")}
                     required
                     autoFocus
                   />
                 </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="login-button"
-                >
-                  {loading ? `⏳ ${t("login.entering")}` : `🏠 ${t("login.enterFamily")}`}
+                <div className="form-group">
+                  <label htmlFor="passwordEmail" className="form-label">🔑 {t("login.password")}</label>
+                  <input
+                    id="passwordEmail"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="form-input"
+                    placeholder={t("login.passwordPlaceholder")}
+                    required
+                  />
+                </div>
+                <button type="submit" disabled={loading} className="login-button">
+                  {loading ? `⏳ ${t("login.entering")}` : `🚀 ${t("login.enterSystem")}`}
                 </button>
-
+                <div style={{ textAlign: "center", marginTop: "12px" }}>
+                  <button
+                    type="button"
+                    onClick={() => router.push("/forgot-password")}
+                    style={{
+                      background: "none", border: "none", color: "rgba(255,255,255,0.9)",
+                      fontSize: "14px", cursor: "pointer", textDecoration: "underline",
+                    }}
+                  >
+                    {t("login.forgotPassword")}
+                  </button>
+                </div>
                 <div style={{ marginTop: "20px", position: "relative", zIndex: 1 }}>
                   <p style={{ color: "rgba(255,255,255,0.8)", fontSize: "13px", marginBottom: "10px", textAlign: "center" }}>
                     {t("login.orSignInWith")}
                   </p>
                   <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-                    <button
-                      type="button"
-                      onClick={() => signIn("google", { callbackUrl: "/" })}
-                      className="quick-login-button"
-                      style={{ maxWidth: "200px" }}
-                    >
-                      Google
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => signIn("apple", { callbackUrl: "/" })}
-                      className="quick-login-button"
-                      style={{ maxWidth: "200px" }}
-                    >
-                      Apple
-                    </button>
+                    <button type="button" onClick={() => signIn("google", { callbackUrl: "/" })} className="quick-login-button" style={{ maxWidth: "200px" }}>Google</button>
+                    <button type="button" onClick={() => signIn("apple", { callbackUrl: "/" })} className="quick-login-button" style={{ maxWidth: "200px" }}>Apple</button>
                   </div>
                 </div>
               </form>
-
-              <div style={{ textAlign: 'center', marginTop: '24px', position: 'relative', zIndex: 1 }}>
-                <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px', marginBottom: '8px' }}>
-                  💡 {t("login.tipCode")}
-                </p>
-                <button
-                  onClick={() => router.push('/')}
-                  style={{ 
-                    background: 'none', 
-                    border: 'none', 
-                    color: 'rgba(255, 255, 255, 0.7)', 
-                    fontSize: '14px', 
-                    cursor: 'pointer',
-                    textDecoration: 'underline'
-                  }}
-                >
+              <div style={{ textAlign: "center", marginTop: "24px", position: "relative", zIndex: 1 }}>
+                <button type="button" onClick={() => { setLoginMode("familyCode"); setError(""); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.85)", fontSize: "14px", cursor: "pointer", textDecoration: "underline" }}>
+                  {t("login.signInWithFamilyCode")}
+                </button>
+                <span style={{ color: "rgba(255,255,255,0.5)", margin: "0 6px" }}>|</span>
+                <button type="button" onClick={() => router.push("/")} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.7)", fontSize: "14px", cursor: "pointer", textDecoration: "underline" }}>
                   ← {t("common.backToHome")}
                 </button>
-                <span style={{ color: 'rgba(255,255,255,0.5)', margin: '0 6px' }}>|</span>
-                <button
-                  onClick={() => router.push('/register-family')}
-                  style={{ 
-                    background: 'none', 
-                    border: 'none', 
-                    color: 'rgba(255, 255, 255, 0.85)', 
-                    fontSize: '14px', 
-                    cursor: 'pointer',
-                    textDecoration: 'underline',
-                    fontWeight: 600
-                  }}
-                >
+                <span style={{ color: "rgba(255,255,255,0.5)", margin: "0 6px" }}>|</span>
+                <button type="button" onClick={() => router.push("/register-family")} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.85)", fontSize: "14px", cursor: "pointer", textDecoration: "underline", fontWeight: 600 }}>
                   {t("login.registerFamily")}
                 </button>
+              </div>
+            </>
+          )}
+
+          {step === 1 && loginMode === "familyCode" && (
+            <>
+              <div className="login-header">
+                <div className="login-emoji">🏠</div>
+                <h1 className="login-title fortnite-title">{t("login.title")}</h1>
+                <p className="login-subtitle">{t("login.enterCode")}</p>
+              </div>
+              <form onSubmit={handleFamilyCodeSubmit}>
+                {error && <div className="error-message">❌ {error}</div>}
+                <div className="form-group">
+                  <label htmlFor="familyCode" className="form-label">🔑 {t("login.familyCode")}</label>
+                  <input id="familyCode" type="text" value={familyCode} onChange={(e) => setFamilyCode(e.target.value)} className="form-input" placeholder={t("login.familyCodePlaceholder")} required autoFocus />
+                </div>
+                <button type="submit" disabled={loading} className="login-button">
+                  {loading ? `⏳ ${t("login.entering")}` : `🏠 ${t("login.enterFamily")}`}
+                </button>
+                <div style={{ marginTop: "20px", position: "relative", zIndex: 1 }}>
+                  <p style={{ color: "rgba(255,255,255,0.8)", fontSize: "13px", marginBottom: "10px", textAlign: "center" }}>{t("login.orSignInWith")}</p>
+                  <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+                    <button type="button" onClick={() => signIn("google", { callbackUrl: "/" })} className="quick-login-button" style={{ maxWidth: "200px" }}>Google</button>
+                    <button type="button" onClick={() => signIn("apple", { callbackUrl: "/" })} className="quick-login-button" style={{ maxWidth: "200px" }}>Apple</button>
+                  </div>
+                </div>
+              </form>
+              <div style={{ textAlign: "center", marginTop: "24px", position: "relative", zIndex: 1 }}>
+                <p style={{ color: "rgba(255,255,255,0.8)", fontSize: "14px", marginBottom: "8px" }}>💡 {t("login.tipCode")}</p>
+                <button type="button" onClick={() => { setLoginMode("email"); setError(""); setStep(1); }} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.85)", fontSize: "14px", cursor: "pointer", textDecoration: "underline" }}>
+                  {t("login.signInWithEmail")}
+                </button>
+                <span style={{ color: "rgba(255,255,255,0.5)", margin: "0 6px" }}>|</span>
+                <button type="button" onClick={() => router.push("/")} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.7)", fontSize: "14px", cursor: "pointer", textDecoration: "underline" }}>← {t("common.backToHome")}</button>
+                <span style={{ color: "rgba(255,255,255,0.5)", margin: "0 6px" }}>|</span>
+                <button type="button" onClick={() => router.push("/register-family")} style={{ background: "none", border: "none", color: "rgba(255,255,255,0.85)", fontSize: "14px", cursor: "pointer", textDecoration: "underline", fontWeight: 600 }}>{t("login.registerFamily")}</button>
               </div>
             </>
           )}

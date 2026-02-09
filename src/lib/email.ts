@@ -60,3 +60,55 @@ export async function sendInviteEmail(params: SendInviteParams): Promise<{ ok: b
     return { ok: false, error: e instanceof Error ? e.message : "Ошибка отправки" };
   }
 }
+
+const RESET_EXPIRES_HOURS = 1;
+
+export interface SendPasswordResetParams {
+  to: string;
+  userName: string;
+  resetUrl: string;
+}
+
+export async function sendPasswordResetEmail(params: SendPasswordResetParams): Promise<{ ok: boolean; error?: string }> {
+  const { to, userName, resetUrl } = params;
+  const subject = "Password reset — Family Stars";
+  const html = `
+    <p>Hi${userName ? `, ${userName}` : ""}!</p>
+    <p>You requested a password reset for Family Stars.</p>
+    <p><a href="${resetUrl}" style="color: #6366f1; font-weight: 600;">Reset password</a></p>
+    <p style="word-break: break-all; font-size: 12px; color: #666;">If the button doesn't work, copy the link: ${resetUrl}</p>
+    <p style="margin-top: 24px; font-size: 12px; color: #888;">This link expires in ${RESET_EXPIRES_HOURS} hour(s). If you didn't request this, you can ignore this email.</p>
+  `.trim();
+
+  if (!RESEND_API_KEY) {
+    if (process.env.NODE_ENV === "development") {
+      console.log("[email] RESEND_API_KEY not set. Password reset email not sent:", { to, subject });
+    }
+    return { ok: false, error: "Email not configured" };
+  }
+
+  try {
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+      },
+      body: JSON.stringify({
+        from: EMAIL_FROM,
+        to: [to],
+        subject,
+        html,
+      }),
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      console.error("[email] Resend error:", res.status, body);
+      return { ok: false, error: `Send failed: ${res.status}` };
+    }
+    return { ok: true };
+  } catch (e) {
+    console.error("[email] Send failed:", e);
+    return { ok: false, error: e instanceof Error ? e.message : "Send failed" };
+  }
+}

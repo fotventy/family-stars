@@ -31,6 +31,8 @@ const ru: Messages = {
 
   // login
   "login.title": "Вход в семью",
+  "login.email": "Email",
+  "login.emailPlaceholder": "your@email.com",
   "login.enterCode": "Введите код вашей семьи",
   "login.familyCode": "Код семьи",
   "login.familyCodePlaceholder": "Введите код семьи",
@@ -38,6 +40,9 @@ const ru: Messages = {
   "login.entering": "Вход...",
   "login.orSignInWith": "или войти через",
   "login.tipCode": "Введите код семьи для входа. Код можно получить у администратора семьи",
+  "login.forgotPassword": "Забыли пароль?",
+  "login.signInWithFamilyCode": "Войти по коду семьи",
+  "login.signInWithEmail": "Войти по email",
   "login.registerFamily": "Регистрация семьи",
   "login.selectUser": "Выберите пользователя для входа",
   "login.changeCode": "Изменить код семьи",
@@ -54,6 +59,19 @@ const ru: Messages = {
   "login.roleMom": "Мама",
   "login.roleSon": "Сын",
   "login.roleDaughter": "Дочь",
+
+  // forgot password
+  "forgot.title": "Восстановление пароля",
+  "forgot.subtitle": "Введите email — мы отправим ссылку для сброса пароля",
+  "forgot.email": "Email",
+  "forgot.emailPlaceholder": "your@email.com",
+  "forgot.emailRequired": "Введите email",
+  "forgot.sendLink": "Отправить ссылку",
+  "forgot.sending": "Отправка...",
+  "forgot.error": "Ошибка. Попробуйте позже.",
+  "forgot.checkEmail": "Проверьте почту",
+  "forgot.checkEmailHint": "Если аккаунт с таким email есть, мы отправили ссылку для сброса пароля.",
+  "forgot.backToLogin": "Назад к входу",
 
   // register
   "register.title": "Создать семью",

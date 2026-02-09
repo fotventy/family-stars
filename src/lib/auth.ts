@@ -14,27 +14,37 @@ const providers: NextAuthOptions["providers"] = [
   CredentialsProvider({
     name: "Credentials",
     credentials: {
+      email: { label: "Email", type: "email" },
       name: { label: "Name", type: "text" },
       password: { label: "Password", type: "password" },
       familyCode: { label: "Family code", type: "text" },
     },
     async authorize(credentials) {
-      if (!credentials?.name || !credentials.password) return null;
+      if (!credentials?.password) return null;
       let user = null;
-      if (credentials.familyCode?.trim()) {
-        const family = await prisma.family.findUnique({
-          where: { inviteCode: (credentials.familyCode as string).trim().toUpperCase() },
+      // Login by email + password (primary)
+      if (credentials.email?.trim()) {
+        user = await prisma.user.findUnique({
+          where: { email: (credentials.email as string).trim().toLowerCase() },
         });
-        if (family) {
+      }
+      // Fallback: login by family code + name + password
+      if (!user && credentials?.name?.trim()) {
+        if (credentials.familyCode?.trim()) {
+          const family = await prisma.family.findUnique({
+            where: { inviteCode: (credentials.familyCode as string).trim().toUpperCase() },
+          });
+          if (family) {
+            user = await prisma.user.findFirst({
+              where: { name: credentials.name, familyId: family.id },
+            });
+          }
+        }
+        if (!user) {
           user = await prisma.user.findFirst({
-            where: { name: credentials.name, familyId: family.id },
+            where: { name: credentials.name },
           });
         }
-      }
-      if (!user) {
-        user = await prisma.user.findFirst({
-          where: { name: credentials.name },
-        });
       }
       if (!user) return null;
       const valid = await compare(credentials.password, user.password);
