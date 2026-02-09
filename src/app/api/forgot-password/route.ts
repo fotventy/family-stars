@@ -52,8 +52,13 @@ export async function POST(request: Request) {
 
     if (!result.ok) {
       console.error("Forgot password email failed:", result.error);
+      const isDev = process.env.NODE_ENV === "development";
       return NextResponse.json(
-        { error: "Failed to send email. Try again later." },
+        {
+          error: isDev && result.error
+            ? `Email failed: ${result.error}. Set RESEND_API_KEY and, for production, verify your domain in Resend.`
+            : "Failed to send email. Try again later.",
+        },
         { status: 500 }
       );
     }
