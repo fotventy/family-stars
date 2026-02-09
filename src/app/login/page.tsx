@@ -1,8 +1,10 @@
 "use client";
 
+import "./login.css";
 import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 interface User {
   id: string;
@@ -14,8 +16,21 @@ interface User {
   color: string;
 }
 
+const DEFAULT_PASSWORDS: Record<string, string> = {
+  "Админ": "admin2024",
+  "Тест": "test2024",
+  "Папа": "papa2024",
+  "Мама": "mama2024",
+  "Назар": "nazar2024",
+  "Влад": "vlad2024",
+  "Никита": "nikita2024",
+};
+
 export default function Login() {
-  const [step, setStep] = useState(1); // 1 - ввод кода семьи, 2 - выбор пользователя, 3 - ввод пароля
+  const { t } = useTranslation();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const [step, setStep] = useState(1);
   const [familyCode, setFamilyCode] = useState("");
   const [familyName, setFamilyName] = useState("");
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -23,12 +38,18 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [users, setUsers] = useState<User[]>([]);
-  const router = useRouter();
 
-  // Удаляем автоматическую загрузку пользователей
-  // useEffect(() => {
-  //   fetchUsers();
-  // }, []);
+  // Код семьи из ссылки-приглашения — подставляем в поле и сразу загружаем пользователей
+  useEffect(() => {
+    const code = searchParams.get("familyCode") ?? searchParams.get("code") ?? searchParams.get("invite");
+    if (code?.trim()) {
+      setFamilyCode(code.trim());
+      setError("");
+      setLoading(true);
+      fetchUsers(code.trim()).finally(() => setLoading(false));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchUsers = async (inviteCode: string) => {
     try {
@@ -36,7 +57,7 @@ export default function Login() {
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.error || 'Ошибка загрузки пользователей');
+        throw new Error(data.error || t("login.errorLoadUsers"));
       }
       
       // Преобразуем пользователей из БД в формат для страницы логина
@@ -55,7 +76,7 @@ export default function Login() {
       setStep(2);
     } catch (error: any) {
       console.error('Ошибка загрузки пользователей:', error);
-      setError(error.message || 'Ошибка загрузки пользователей');
+      setError(error.message || t("login.errorLoadUsers"));
     }
   };
 
@@ -85,18 +106,10 @@ export default function Login() {
     return childColors[index];
   };
 
-  const getRoleDisplay = (role: string, gender?: string) => {
-    if (role === 'PARENT' || role === 'FAMILY_ADMIN') {
-      return gender === 'мама' ? 'Мама' : 'Папа';
-    } else {
-      return gender === 'дочь' ? 'Дочь' : 'Сын';
-    }
-  };
-
   const handleFamilyCodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!familyCode.trim()) {
-      setError("Введите код семьи");
+      setError(t("login.errorFamilyCode"));
       return;
     }
 
@@ -150,17 +163,18 @@ export default function Login() {
     try {
     const result = await signIn("credentials", {
       redirect: false,
-        name: selectedUser.name,
-      password
+      name: selectedUser.name,
+      password,
+      familyCode: familyCode || undefined,
     });
 
     if (result?.error) {
-        setError("Неверный пароль");
+        setError(t("login.errorWrongPassword"));
       } else {
         router.push("/");
       }
     } catch (error) {
-      setError("Произошла ошибка при входе");
+      setError(t("login.errorLogin"));
     } finally {
       setLoading(false);
     }
@@ -170,494 +184,44 @@ export default function Login() {
     setLoading(true);
     setError("");
 
-    // Используем стандартные пароли для быстрого входа
-    const defaultPasswords: { [key: string]: string } = {
-      'Админ': 'admin2024',
-      'Тест': 'test2024',
-      'Папа': 'papa2024',
-      'Мама': 'mama2024',
-      'Назар': 'nazar2024',
-      'Влад': 'vlad2024',
-      'Никита': 'nikita2024'
-    };
-
     try {
       const result = await signIn("credentials", {
         redirect: false,
         name: user.name,
-        password: defaultPasswords[user.name] || 'default2024'
+        password: DEFAULT_PASSWORDS[user.name] || "default2024",
+        familyCode: familyCode || undefined,
       });
 
       if (result?.error) {
-        setError("Ошибка быстрого входа");
-    } else {
-      router.push("/");
+        setError(t("login.errorQuickLogin"));
+      } else {
+        router.push("/");
       }
     } catch (error) {
-      setError("Произошла ошибка при входе");
+      setError(t("login.errorLogin"));
     } finally {
       setLoading(false);
     }
   };
 
+  function getRoleDisplay(role: string, gender: string | undefined) {
+    if (role === "PARENT" || role === "FAMILY_ADMIN") {
+      return gender === "мама" ? t("login.roleMom") : t("login.roleDad");
+    }
+    return gender === "дочь" ? t("login.roleDaughter") : t("login.roleSon");
+  }
+
   return (
-    <>
-      {/* 💫 ПРЕМИУМ СТИЛИ */}
-      <style jsx>{`
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
-        
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        
-        body {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-
-        .premium-login-container {
-          min-height: 100vh;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
-          position: relative;
-          overflow: hidden;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 20px;
-        }
-
-        /* 🌟 АНИМИРОВАННЫЙ ГРАДИЕНТНЫЙ ФОН */
-        .premium-login-container::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #fef9e7);
-          background-size: 400% 400%;
-          animation: gradientAnimation 15s ease infinite;
-          opacity: 0.8;
-          z-index: -1;
-        }
-
-        @keyframes gradientAnimation {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-
-        /* 💎 ГЛАВНАЯ КАРТОЧКА */
-        .login-card {
-          background: rgba(255, 255, 255, 0.15);
-          backdrop-filter: blur(20px);
-          border: none;
-          border-radius: 0;
-          padding: 48px;
-          max-width: 600px;
-          width: 100%;
-          position: relative;
-          overflow: hidden;
-          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-        }
-
-        .login-card::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
-          opacity: 1;
-        }
-
-        /* 🎮 ЗАГОЛОВОК */
-        .login-header {
-          text-align: center;
-          margin-bottom: 40px;
-          position: relative;
-          z-index: 1;
-        }
-
-        .login-emoji {
-          font-size: 80px;
-          margin-bottom: 20px;
-          filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
-          animation: bounce 2s infinite;
-        }
-
-        @keyframes bounce {
-          0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-          40% { transform: translateY(-10px); }
-          60% { transform: translateY(-5px); }
-        }
-
-        .login-title {
-          color: white;
-          font-size: 36px;
-          font-weight: 800;
-          text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-          margin-bottom: 12px;
-        }
-
-        .login-subtitle {
-          color: rgba(255, 255, 255, 0.9);
-          font-size: 18px;
-          font-weight: 500;
-        }
-
-        /* 👥 ПОЛЬЗОВАТЕЛИ */
-        .users-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-          gap: 20px;
-          position: relative;
-          z-index: 1;
-          margin-bottom: 32px;
-        }
-
-        .user-card {
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(10px);
-          border: none;
-          border-radius: 0;
-          padding: 24px 16px;
-          text-align: center;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .user-card:hover {
-          transform: translateY(-8px) scale(1.05);
-          border-color: rgba(255, 255, 255, 0.4);
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-        }
-
-        .user-card:active {
-          transform: translateY(-4px) scale(1.02);
-        }
-
-        .user-emoji {
-          font-size: 48px;
-          margin-bottom: 12px;
-          filter: drop-shadow(0 2px 8px rgba(0,0,0,0.3));
-        }
-
-        .user-name {
-          color: white;
-          font-size: 16px;
-          font-weight: 700;
-          text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-          margin-bottom: 4px;
-        }
-
-        .user-role {
-          color: rgba(255, 255, 255, 0.7);
-          font-size: 12px;
-          font-weight: 500;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        /* 🔐 МОДАЛЬНОЕ ОКНО */
-        .modal-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.7);
-          backdrop-filter: blur(8px);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          z-index: 1000;
-          padding: 20px;
-          animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-
-        .modal-content {
-          background: rgba(255, 255, 255, 0.15);
-          backdrop-filter: blur(20px);
-          border: none;
-          border-radius: 0;
-          padding: 40px;
-          max-width: 400px;
-          width: 100%;
-          position: relative;
-          overflow: hidden;
-          box-shadow: 0 25px 50px rgba(0, 0, 0, 0.3);
-          animation: slideUp 0.4s ease;
-        }
-
-        @keyframes slideUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .modal-header {
-          text-align: center;
-          margin-bottom: 32px;
-          position: relative;
-          z-index: 1;
-        }
-
-        .modal-user-emoji {
-          font-size: 64px;
-          margin-bottom: 16px;
-          filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
-        }
-
-        .modal-user-name {
-          color: white;
-          font-size: 24px;
-          font-weight: 800;
-          text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-          margin-bottom: 8px;
-        }
-
-        .modal-user-role {
-          color: rgba(255, 255, 255, 0.7);
-          font-size: 14px;
-          font-weight: 500;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .close-button {
-          position: absolute;
-          top: 16px;
-          right: 16px;
-          background: rgba(255, 69, 58, 0.9);
-          color: white;
-          border: none;
-          width: 36px;
-          height: 36px;
-          border-radius: 12px;
-          font-size: 16px;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-        }
-
-        .close-button:hover {
-          background: rgba(255, 69, 58, 1);
-          transform: scale(1.1);
-        }
-
-        .password-form {
-          position: relative;
-          z-index: 1;
-        }
-
-        .form-group {
-          margin-bottom: 24px;
-        }
-
-        .form-label {
-          display: block;
-          color: white;
-          font-size: 16px;
-          font-weight: 600;
-          margin-bottom: 8px;
-          text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-        }
-
-        .form-input {
-          width: 100%;
-          padding: 16px 20px;
-          border: none;
-          border-radius: 0;
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(10px);
-          color: white;
-          font-size: 16px;
-          font-weight: 500;
-          transition: all 0.3s ease;
-          box-sizing: border-box;
-          text-transform: uppercase;
-          letter-spacing: 2px;
-          text-align: center;
-        }
-
-        .form-input::placeholder {
-          color: rgba(255, 255, 255, 0.6);
-        }
-
-        .form-input:focus {
-          outline: none;
-          border-color: rgba(255, 255, 255, 0.5);
-          background: rgba(255, 255, 255, 0.15);
-          transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        .error-message {
-          background: rgba(255, 69, 58, 0.9);
-          color: white;
-          padding: 12px 16px;
-          border-radius: 0;
-          text-align: center;
-          font-weight: 600;
-          margin-bottom: 20px;
-          border: none;
-          backdrop-filter: blur(10px);
-          font-size: 14px;
-        }
-
-        .login-button {
-          width: 100%;
-          background: linear-gradient(135deg, #28A745 0%, #1E7E34 100%);
-          color: white;
-          border: none;
-          border-radius: 0;
-          padding: 16px 40px;
-          font-size: 18px;
-          font-weight: bold;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          margin-bottom: 16px;
-          min-height: 56px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-family: 'Fortnite Battlefest', 'Inter', sans-serif !important;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          
-          /* Fortnite скошенные углы */
-          clip-path: polygon(
-            8px 0%, 
-            100% 0%, 
-            calc(100% - 8px) 100%, 
-            0% 100%
-          );
-          
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .login-button:hover:not(:disabled) {
-          transform: translateY(-1px);
-          background: linear-gradient(135deg, #34CE57 0%, #28A745 100%);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        .login-button:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-          transform: none !important;
-        }
-
-        .quick-login-button {
-          width: 100%;
-          background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
-          color: white;
-          border: none;
-          border-radius: 0;
-          padding: 16px 24px;
-          font-size: 16px;
-          font-weight: bold;
-          cursor: pointer;
-          transition: all 0.2s ease;
-          min-height: 56px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-family: 'Fortnite Battlefest', 'Inter', sans-serif !important;
-          text-transform: uppercase;
-          letter-spacing: 1px;
-          
-          /* Fortnite скошенные углы */
-          clip-path: polygon(
-            8px 0%, 
-            100% 0%, 
-            calc(100% - 8px) 100%, 
-            0% 100%
-          );
-          
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .quick-login-button:hover {
-          transform: translateY(-1px);
-          background: linear-gradient(135deg, #5BA3F5 0%, #4A90E2 100%);
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        }
-
-        /* 📱 МОБИЛЬНАЯ АДАПТАЦИЯ */
-        @media (max-width: 768px) {
-          .login-card {
-            padding: 32px 24px;
-            margin: 16px;
-          }
-
-          .login-title {
-            font-size: 28px;
-          }
-
-          .login-subtitle {
-            font-size: 16px;
-          }
-
-          .users-grid {
-            grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-          }
-
-          .user-card {
-            padding: 20px 12px;
-          }
-
-          .user-emoji {
-            font-size: 40px;
-          }
-
-          .user-name {
-            font-size: 14px;
-          }
-
-          .modal-content {
-            padding: 32px 24px;
-            margin: 16px;
-          }
-        }
-
-        @media (max-width: 480px) {
-          .users-grid {
-            grid-template-columns: 1fr;
-            max-width: 200px;
-            margin: 0 auto 32px auto;
-          }
-        }
-      `}</style>
-
-      <div className="premium-login-container">
+    <div className="login-page-root premium-login-container">
         <div className="login-card">
           {/* ШАГ 1: ВВОД КОДА СЕМЬИ */}
           {step === 1 && (
             <>
               <div className="login-header">
                 <div className="login-emoji">🏠</div>
-                <h1 className="login-title fortnite-title">Вход в семью</h1>
+                <h1 className="login-title fortnite-title">{t("login.title")}</h1>
                 <p className="login-subtitle">
-                  Введите код вашей семьи
+                  {t("login.enterCode")}
                 </p>
               </div>
 
@@ -670,7 +234,7 @@ export default function Login() {
 
                 <div className="form-group">
                   <label htmlFor="familyCode" className="form-label">
-                    🔑 Код семьи
+                    🔑 {t("login.familyCode")}
                   </label>
                   <input
                     id="familyCode"
@@ -678,7 +242,7 @@ export default function Login() {
                     value={familyCode}
                     onChange={(e) => setFamilyCode(e.target.value)}
                     className="form-input"
-                    placeholder="Введите код семьи"
+                    placeholder={t("login.familyCodePlaceholder")}
                     required
                     autoFocus
                   />
@@ -689,16 +253,40 @@ export default function Login() {
                   disabled={loading}
                   className="login-button"
                 >
-                  {loading ? '⏳ Вход...' : '🏠 Войти в семью'}
+                  {loading ? `⏳ ${t("login.entering")}` : `🏠 ${t("login.enterFamily")}`}
                 </button>
+
+                <div style={{ marginTop: "20px", position: "relative", zIndex: 1 }}>
+                  <p style={{ color: "rgba(255,255,255,0.8)", fontSize: "13px", marginBottom: "10px", textAlign: "center" }}>
+                    {t("login.orSignInWith")}
+                  </p>
+                  <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+                    <button
+                      type="button"
+                      onClick={() => signIn("google", { callbackUrl: "/" })}
+                      className="quick-login-button"
+                      style={{ maxWidth: "200px" }}
+                    >
+                      Google
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => signIn("apple", { callbackUrl: "/" })}
+                      className="quick-login-button"
+                      style={{ maxWidth: "200px" }}
+                    >
+                      Apple
+                    </button>
+                  </div>
+                </div>
               </form>
 
               <div style={{ textAlign: 'center', marginTop: '24px', position: 'relative', zIndex: 1 }}>
                 <p style={{ color: 'rgba(255, 255, 255, 0.8)', fontSize: '14px', marginBottom: '8px' }}>
-                  💡 Введите код семьи для входа. Код можно получить у администратора семьи
+                  💡 {t("login.tipCode")}
                 </p>
                 <button
-                  onClick={() => window.location.href = '/'}
+                  onClick={() => router.push('/')}
                   style={{ 
                     background: 'none', 
                     border: 'none', 
@@ -708,7 +296,22 @@ export default function Login() {
                     textDecoration: 'underline'
                   }}
                 >
-                  ← Вернуться на главную
+                  ← {t("common.backToHome")}
+                </button>
+                <span style={{ color: 'rgba(255,255,255,0.5)', margin: '0 6px' }}>|</span>
+                <button
+                  onClick={() => router.push('/register-family')}
+                  style={{ 
+                    background: 'none', 
+                    border: 'none', 
+                    color: 'rgba(255, 255, 255, 0.85)', 
+                    fontSize: '14px', 
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                    fontWeight: 600
+                  }}
+                >
+                  {t("login.registerFamily")}
                 </button>
               </div>
             </>
@@ -721,7 +324,7 @@ export default function Login() {
                 <div className="login-emoji">⭐</div>
                 <h1 className="login-title fortnite-title">{familyName}</h1>
                 <p className="login-subtitle">
-                  Выберите пользователя для входа
+                  {t("login.selectUser")}
                 </p>
               </div>
 
@@ -753,7 +356,7 @@ export default function Login() {
                     textDecoration: 'underline'
                   }}
                 >
-                  ← Изменить код семьи
+                  ← {t("login.changeCode")}
                 </button>
               </div>
             </>
@@ -785,7 +388,7 @@ export default function Login() {
 
                 <div className="form-group">
                   <label htmlFor="password" className="form-label">
-                    🔑 Пароль
+                    🔑 {t("login.password")}
                   </label>
                   <input
                     id="password"
@@ -793,7 +396,7 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="form-input"
-                    placeholder="Введите пароль"
+                    placeholder={t("login.passwordPlaceholder")}
                     required
                     autoFocus
                   />
@@ -804,7 +407,7 @@ export default function Login() {
                   disabled={loading}
                   className="login-button game-button"
                 >
-                  {loading ? '⏳ Вход...' : '🚀 Войти в систему'}
+                  {loading ? `⏳ ${t("login.entering")}` : `🚀 ${t("login.enterSystem")}`}
                 </button>
 
                 <button
@@ -813,13 +416,13 @@ export default function Login() {
                   className="quick-login-button fortnite-text"
                   disabled={loading}
                 >
-                  ⚡ Быстрый вход (тест)
+                  ⚡ {t("login.quickLogin")}
                 </button>
               </form>
             </div>
           </div>
         )}
       </div>
-    </>
+    </div>
   );
 } 

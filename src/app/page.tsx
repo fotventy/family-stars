@@ -3,12 +3,26 @@
 import { useSession } from "next-auth/react";
 import { redirect } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslation } from "@/contexts/LanguageContext";
+import { LOCALES } from "@/lib/i18n";
 
 export default function Home() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [showOptions, setShowOptions] = useState(false);
+  const [langPopupOpen, setLangPopupOpen] = useState(false);
+  const { t, locale, setLocale } = useTranslation();
+
+  // По ссылке-приглашению (code / invite) — сразу на страницу входа в семью
+  useEffect(() => {
+    const code = searchParams.get("code") ?? searchParams.get("invite") ?? searchParams.get("familyCode");
+    if (code && status === "unauthenticated") {
+      router.replace(`/login?familyCode=${encodeURIComponent(code.trim())}`);
+      return;
+    }
+  }, [searchParams, status, router]);
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -18,7 +32,6 @@ export default function Home() {
         redirect("/child");
       }
     } else if (status === "unauthenticated") {
-      // Показываем опции вместо автоматического перенаправления
       setShowOptions(true);
     }
   }, [status, session]);
@@ -259,44 +272,138 @@ export default function Home() {
       `}</style>
 
       <div className="premium-container">
-        {showOptions ? (
-          <div className="welcome-card">
+{showOptions ? (
+          <div className="welcome-card" style={{ position: "relative" }}>
             <h1 className="main-title">
-              ⭐ Семейные Звёздочки
+              ⭐ {t("home.title")}
             </h1>
             <p className="main-subtitle">
-              Помогай дома - получай звёзды - покупай призы!
+              {t("home.subtitle")}
             </p>
-            
             <div className="options-container">
-              <button 
+              <button
+                type="button"
                 onClick={handleCreateFamily}
                 className="option-button primary"
+                title={t("home.tooltipCreate")}
               >
                 <span className="option-icon">🏠</span>
                 <div className="option-text">
-                  <span className="option-title">Создать семью</span>
-                  <span className="option-description">Зарегистрировать новую семью</span>
+                  <span className="option-title">{t("home.createFamily")}</span>
+                  <span className="option-description">{t("home.createFamilyDesc")}</span>
                 </div>
               </button>
-              
-              <button 
+              <button
+                type="button"
                 onClick={handleJoinFamily}
                 className="option-button secondary"
+                title={t("home.tooltipJoin")}
               >
                 <span className="option-icon">🚪</span>
                 <div className="option-text">
-                  <span className="option-title">Войти в семью</span>
-                  <span className="option-description">У меня уже есть аккаунт</span>
+                  <span className="option-title">{t("home.joinFamily")}</span>
+                  <span className="option-description">{t("home.joinFamilyDesc")}</span>
                 </div>
               </button>
             </div>
+            <div style={{ marginTop: "32px", textAlign: "center", position: "relative", zIndex: 1 }}>
+              <button
+                type="button"
+                onClick={() => setLangPopupOpen(true)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  color: "rgba(255,255,255,0.85)",
+                  fontSize: "14px",
+                  cursor: "pointer",
+                  textDecoration: "underline",
+                  padding: "4px 8px",
+                }}
+              >
+                🌐 {t("home.langSwitcher")}
+              </button>
+            </div>
+            {langPopupOpen && (
+              <>
+                <div
+                  role="presentation"
+                  style={{
+                    position: "fixed",
+                    inset: 0,
+                    background: "rgba(0,0,0,0.5)",
+                    zIndex: 1000,
+                  }}
+                  onClick={() => setLangPopupOpen(false)}
+                />
+                <div
+                  style={{
+                    position: "fixed",
+                    left: "50%",
+                    top: "50%",
+                    transform: "translate(-50%, -50%)",
+                    background: "linear-gradient(135deg, #4a5568 0%, #2d3748 100%)",
+                    borderRadius: "12px",
+                    padding: "20px 24px",
+                    boxShadow: "0 25px 50px rgba(0,0,0,0.4)",
+                    zIndex: 1001,
+                    minWidth: "260px",
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div style={{ color: "white", fontWeight: 700, marginBottom: "16px", fontSize: "16px" }}>
+                    {t("home.langSwitcher")}
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    {LOCALES.map((loc) => (
+                      <button
+                        key={loc}
+                        type="button"
+                        onClick={() => {
+                          setLocale(loc);
+                          setLangPopupOpen(false);
+                        }}
+                        style={{
+                          padding: "10px 14px",
+                          borderRadius: "8px",
+                          border: "none",
+                          background: locale === loc ? "rgba(99, 102, 241, 0.9)" : "rgba(255,255,255,0.15)",
+                          color: "white",
+                          fontSize: "14px",
+                          fontWeight: locale === loc ? 700 : 500,
+                          cursor: "pointer",
+                          textAlign: "left",
+                        }}
+                      >
+                        {loc.toUpperCase()} — {t(`settings.lang_${loc}`)}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setLangPopupOpen(false)}
+                    style={{
+                      marginTop: "12px",
+                      width: "100%",
+                      padding: "8px",
+                      borderRadius: "8px",
+                      border: "none",
+                      background: "rgba(255,255,255,0.2)",
+                      color: "white",
+                      fontSize: "13px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {t("common.back")}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         ) : (
           <div className="loading-card">
             <div className="loading-spinner"></div>
-            <h2 className="loading-title fortnite-title">Загружаем магию...</h2>
-            <p className="loading-subtitle">Определяем твою роль в семье ✨</p>
+            <h2 className="loading-title fortnite-title">{t("home.loadingTitle")}</h2>
+            <p className="loading-subtitle">{t("home.loadingSubtitle")}</p>
           </div>
         )}
       </div>

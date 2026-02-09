@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { hash } from "bcryptjs";
 import { authOptions } from "@/lib/auth";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
+import { sendInviteEmail } from "@/lib/email";
 
 // Генерация уникального токена для первого входа
 function generateFirstLoginToken() {
@@ -119,13 +118,26 @@ export async function POST(request: Request) {
     }
 
     const userId = (session as any).user.id;
-    const { name, role, gender } = await request.json();
+    const { name, role, gender, email } = await request.json();
 
     if (!name || !role || !gender) {
       return NextResponse.json(
-        { error: "Имя, роль и пол обязательны" }, 
+        { error: "Имя, роль и пол обязательны" },
         { status: 400 }
       );
+    }
+
+    const emailStr = typeof email === "string" ? email.trim() || undefined : undefined;
+    if (emailStr) {
+      const existingByEmail = await prisma.user.findUnique({
+        where: { email: emailStr },
+      });
+      if (existingByEmail) {
+        return NextResponse.json(
+          { error: "Пользователь с таким email уже зарегистрирован" },
+          { status: 400 }
+        );
+      }
     }
 
     // Проверяем, что пользователь - админ семьи
@@ -156,44 +168,58 @@ export async function POST(request: Request) {
       );
     }
 
-    // Генерируем временный пароль и токен для первого входа
-    const tempPassword = `${name.toLowerCase()}${Math.floor(Math.random() * 999)}`;
-    const hashedTempPassword = await hash(tempPassword, 10);
     const firstLoginToken = generateFirstLoginToken();
+    const tokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 дней
+    const hashedPassword = await hash(firstLoginToken, 10); // временный пароль не нужен, вход только по ссылке
 
-    // Создаем нового члена семьи
     const newMember = await prisma.user.create({
       data: {
         name,
-        password: hashedTempPassword,
+        email: emailStr ?? null,
+        password: hashedPassword,
         tempPassword: firstLoginToken,
+        tempPasswordExpiresAt: tokenExpiresAt,
         role,
         gender,
         familyId: admin.adminFamily.id,
-        points: role === 'CHILD' ? 10 : 0,
+        points: role === "CHILD" ? 10 : 0,
         mustChangePassword: true,
-        isEmailVerified: true
-      }
+        isEmailVerified: false,
+      },
     });
 
-    // Генерируем ссылку для первого входа
-    const baseUrl = process.env.NEXTAUTH_URL || 'https://family-stars.vercel.app';
+    const baseUrl = process.env.NEXTAUTH_URL || "https://family-stars.vercel.app";
     const firstLoginUrl = `${baseUrl}/first-login?token=${firstLoginToken}&user=${encodeURIComponent(name)}`;
+    const expiresInDays = 7;
 
-    console.log(`✅ Создан член семьи: ${newMember.name} (${newMember.role}) в семье ${admin.adminFamily.name}`);
+    let emailSent = false;
+    if (emailStr) {
+      const sendResult = await sendInviteEmail({
+        to: emailStr,
+        memberName: name,
+        familyName: admin.adminFamily.name,
+        firstLoginUrl,
+        expiresInDays,
+      });
+      emailSent = sendResult.ok;
+    }
 
     return NextResponse.json({
       success: true,
       member: {
         id: newMember.id,
         name: newMember.name,
+        email: newMember.email,
         role: newMember.role,
         gender: newMember.gender,
         points: newMember.points,
-        tempPassword,
-        firstLoginUrl
+        firstLoginUrl,
+        linkExpiresAt: tokenExpiresAt.toISOString(),
+        emailSent,
       },
-      message: `Член семьи ${newMember.name} успешно добавлен`
+      message: emailSent
+        ? `Член семьи ${newMember.name} добавлен. Приглашение отправлено на ${emailStr}.`
+        : `Член семьи ${newMember.name} добавлен. ${emailStr ? "Не удалось отправить письмо — скопируйте ссылку ниже и отправьте вручную." : "Отправьте ему ссылку для первого входа (можно указать email при добавлении — тогда приглашение уйдёт на почту)."} Ссылка действительна ${expiresInDays} дней.`,
     });
 
   } catch (error) {

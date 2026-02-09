@@ -1,15 +1,18 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/adminGuard";
 
-const prisma = new PrismaClient();
-
-export async function POST() {
-  return await initializeUsers();
+export async function POST(request: Request) {
+  const err = await requireAdmin(request);
+  if (err) return err;
+  return initializeUsers();
 }
 
-export async function GET() {
-  return await initializeUsers();
+export async function GET(request: Request) {
+  const err = await requireAdmin(request);
+  if (err) return err;
+  return initializeUsers();
 }
 
 async function initializeUsers() {
@@ -85,4 +88,5 @@ async function initializeUsers() {
   } finally {
     await prisma.$disconnect();
   }
-} 
+}
+ 

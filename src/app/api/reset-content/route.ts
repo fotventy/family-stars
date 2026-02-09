@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/adminGuard";
 
-const prisma = new PrismaClient();
-
-export async function POST() {
+export async function POST(request: Request) {
+  const err = await requireAdmin(request);
+  if (err) return err;
   try {
     console.log("🔄 Очищаем и пересоздаем контент...");
 

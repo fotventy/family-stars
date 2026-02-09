@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/adminGuard";
 
-const prisma = new PrismaClient();
-
-export async function GET() {
+export async function GET(request: Request) {
+  const err = await requireAdmin(request);
+  if (err) return err;
   try {
     console.log("🔄 Проверяем состояние миграций...");
     

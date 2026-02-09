@@ -80,8 +80,8 @@ export default function FirstLogin() {
         setError("Ошибка автоматического входа. Попробуйте войти вручную на странице входа.");
         setTimeout(() => router.push("/login"), 3000);
       } else {
-        // Перенаправляем на соответствующую страницу
-        router.push("/parent");
+        // Сначала предлагаем усилить защиту (2FA), затем — в кабинет
+        router.push("/welcome");
       }
       
     } catch (error) {

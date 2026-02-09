@@ -21,15 +21,18 @@ model Family {
   adminId     String   @unique // ID администратора семьи
   admin       User     @relation("FamilyAdmin", fields: [adminId], references: [id])
   
-  members     User[]   @relation("FamilyMembers")
-  
+  members       User[]   @relation("FamilyMembers")
+  tasks         Task[]
+  gifts         Gift[]
+  premiumUntil  DateTime? // подписка «без рекламы» действует до этой даты
+
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
 
 model User {
   id        String   @id @default(cuid())
-  name      String   @unique
+  name      String   // не уникально: имена/фамилии могут совпадать
   password  String
   role      String   @default("CHILD") // PARENT, CHILD, FAMILY_ADMIN
   gender    String?  // "папа", "мама", "сын", "дочь"
@@ -43,9 +46,11 @@ model User {
   familyId         String?
   family           Family?   @relation("FamilyMembers", fields: [familyId], references: [id])
   adminFamily      Family?   @relation("FamilyAdmin") // семья, где этот пользователь админ
-  tempPassword     String?   // токен для первого входа
-  mustChangePassword Boolean @default(false)
-  isEmailVerified    Boolean @default(false)
+  tempPassword         String?   // токен для первого входа
+  tempPasswordExpiresAt DateTime? // срок действия токена (TTL)
+  mustChangePassword   Boolean  @default(false)
+  isEmailVerified      Boolean  @default(false)
+  image                String?  // аватар (URL от OAuth)
   
   tasks     UserTask[]
   gifts     UserGift[]
@@ -62,9 +67,10 @@ model Task {
   isActive    Boolean     @default(true)
   emoji       String?
   sortOrder   Int         @default(0)
-  
+  familyId    String?     // null = глобальные задачи для всех семей
+  family      Family?     @relation(fields: [familyId], references: [id], onDelete: SetNull)
   userTasks   UserTask[]
-  
+
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 }
@@ -90,9 +96,10 @@ model Gift {
   isActive    Boolean     @default(true)
   emoji       String?
   sortOrder   Int         @default(0)
-  
+  familyId    String?     // null = глобальные подарки для всех семей
+  family      Family?     @relation(fields: [familyId], references: [id], onDelete: SetNull)
   userGifts   UserGift[]
-  
+
   createdAt   DateTime    @default(now())
   updatedAt   DateTime    @updatedAt
 }

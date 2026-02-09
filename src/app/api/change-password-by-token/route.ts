@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import { hash } from "bcryptjs";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   try {
@@ -10,49 +8,52 @@ export async function POST(request: Request) {
 
     if (!token || !userName || !newPassword) {
       return NextResponse.json(
-        { error: "Токен, имя пользователя и новый пароль обязательны" }, 
+        { error: "Токен, имя пользователя и новый пароль обязательны" },
         { status: 400 }
       );
     }
 
     if (newPassword.length < 6) {
       return NextResponse.json(
-        { error: "Пароль должен содержать минимум 6 символов" }, 
+        { error: "Пароль должен содержать минимум 6 символов" },
         { status: 400 }
       );
     }
 
-    // Ищем пользователя по токену и имени
     const user = await prisma.user.findFirst({
       where: {
         name: userName,
         tempPassword: token,
-        mustChangePassword: true
-      }
+        mustChangePassword: true,
+      },
     });
 
     if (!user) {
       return NextResponse.json(
-        { error: "Неверный токен или пользователь не найден" }, 
+        { error: "Неверный токен или пользователь не найден" },
         { status: 404 }
       );
     }
 
-    // Хешируем новый пароль
+    if (user.tempPasswordExpiresAt && new Date() > user.tempPasswordExpiresAt) {
+      return NextResponse.json(
+        { error: "Срок действия ссылки истёк. Запросите новую." },
+        { status: 410 }
+      );
+    }
+
     const hashedPassword = await hash(newPassword, 10);
 
-    // Обновляем пароль и убираем флаги для смены пароля
     await prisma.user.update({
       where: { id: user.id },
       data: {
         password: hashedPassword,
         tempPassword: null,
+        tempPasswordExpiresAt: null,
         mustChangePassword: false,
-        isEmailVerified: true
-      }
+        isEmailVerified: true,
+      },
     });
-
-    console.log(`✅ Пароль изменён для пользователя: ${user.name} (${user.role})`);
 
     return NextResponse.json({
       success: true,
@@ -74,7 +75,5 @@ export async function POST(request: Request) {
       { status: 500 }
     );
 
-  } finally {
-    await prisma.$disconnect();
   }
 } 

@@ -3,24 +3,34 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "sh -c 'lsof -ti :3000 | xargs kill -9 2>/dev/null; next dev'",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "seed": "ts-node --esm prisma/seed.ts",
     "db:setup": "npx prisma generate && npx prisma migrate dev --name init && npx prisma db seed",
     "db:reset": "npx prisma migrate reset --force",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "cap:init": "cap init",
+    "cap:add:android": "cap add android",
+    "cap:add:ios": "cap add ios",
+    "cap:sync": "cap sync",
+    "cap:open:android": "cap open android",
+    "cap:open:ios": "cap open ios"
   },
   "prisma": {
     "seed": "ts-node --esm prisma/seed.ts"
   },
   "dependencies": {
+    "@capacitor-community/admob": "^7.0.0",
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/core": "^6.0.0",
+    "@capacitor/ios": "^6.0.0",
     "@prisma/client": "^5.0.0",
     "@types/bcryptjs": "^2.4.6",
     "bcryptjs": "^2.4.3",
     "chart.js": "^4.4.1",
-    "next": "14.0.3",
+    "next": "^14.0.3",
     "next-auth": "^4.24.5",
     "react": "^18",
     "react-chartjs-2": "^5.2.0",
@@ -28,6 +38,7 @@
     "tailwindcss": "^3.3.0"
   },
   "devDependencies": {
+    "@capacitor/cli": "^6.0.0",
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
@@ -35,7 +46,7 @@
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",
     "eslint": "^8",
-    "eslint-config-next": "14.0.3",
+    "eslint-config-next": "^14.0.3",
     "postcss": "^8",
     "prisma": "^5.0.0",
     "ts-node": "^10.9.2",

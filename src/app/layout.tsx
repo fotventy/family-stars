@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import Providers from "./providers";
+import AdBanner from "@/components/AdBanner";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -18,7 +19,12 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body className={inter.className}>
-        <Providers>{children}</Providers>
+        <Providers>
+          <div className="min-h-screen flex flex-col">
+            <main className="flex-1">{children}</main>
+            <AdBanner position="bottom" className="ad-banner-slot" />
+          </div>
+        </Providers>
       </body>
     </html>
   );

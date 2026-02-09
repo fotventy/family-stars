@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import { hash } from "bcryptjs";
+import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/adminGuard";
 
-const prisma = new PrismaClient();
-
-export async function POST() {
+export async function POST(request: Request) {
+  const err = await requireAdmin(request);
+  if (err) return err;
   try {
     console.log("👨‍👩‍👧‍👦 Инициализируем всю семью...");
 
@@ -26,8 +27,8 @@ export async function POST() {
     for (const userData of familyUsers) {
       try {
         // Проверяем, существует ли пользователь
-        const existingUser = await prisma.user.findUnique({
-          where: { name: userData.name }
+        const existingUser = await prisma.user.findFirst({
+          where: { name: userData.name },
         });
 
         if (existingUser) {

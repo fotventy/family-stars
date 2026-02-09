@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request: Request) {
   try {
@@ -95,27 +93,20 @@ export async function POST(request: Request) {
       );
     }
 
-    // Используем транзакцию для создания записи о выполнении задачи и начисления баллов
     const result = await prisma.$transaction(async (tx) => {
-      // Создаем запись о выполнении задачи
       const newUserTask = await tx.userTask.create({
         data: {
           userId: (session as any).user.id,
           taskId: taskId,
-          status: 'COMPLETED'
+          status: "COMPLETED",
         },
-        include: {
-          task: true
-      }
-    });
-
-      // Начисляем баллы пользователю
-      const updatedUser = await tx.user.update({
-        where: { id: (session as any).user.id },
-        data: { points: { increment: task.points } }
+        include: { task: true },
       });
-
-      return { userTask: newUserTask, user: updatedUser };
+      await tx.user.update({
+        where: { id: (session as any).user.id },
+        data: { points: { increment: task.points } },
+      });
+      return { userTask: newUserTask };
     });
 
     return NextResponse.json(result.userTask, { status: 201 });
@@ -132,13 +123,16 @@ export async function PUT(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session || (session as any).user.role !== "PARENT") {
+    if (
+      !session ||
+      ((session as any).user.role !== "PARENT" &&
+        (session as any).user.role !== "FAMILY_ADMIN")
+    ) {
       return NextResponse.json(
-        { error: "Недостаточно прав" }, 
+        { error: "Недостаточно прав" },
         { status: 403 }
       );
     }
-
     const { id, status } = await request.json();
 
     if (!id) {

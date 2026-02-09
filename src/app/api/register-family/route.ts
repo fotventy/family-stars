@@ -1,18 +1,6 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import { hash } from "bcryptjs";
-
-const prisma = new PrismaClient();
-
-// Генерация случайного пароля
-function generateTempPassword(length = 8) {
-  const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-  let result = '';
-  for (let i = 0; i < length; i++) {
-    result += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return result;
-}
+import { prisma } from "@/lib/prisma";
 
 // Генерация кода приглашения семьи
 function generateInviteCode() {
@@ -21,11 +9,17 @@ function generateInviteCode() {
 
 export async function POST(request: Request) {
   try {
-    const { email, familyName, parentName, parentType } = await request.json();
+    const { email, familyName, parentName, parentType, password: rawPassword } = await request.json();
 
     if (!email || !familyName || !parentName || !parentType) {
       return NextResponse.json(
-        { error: "Все поля обязательны для заполнения" }, 
+        { error: "Все поля обязательны для заполнения" },
+        { status: 400 }
+      );
+    }
+    if (!rawPassword || typeof rawPassword !== "string" || rawPassword.length < 6 || rawPassword.length > 128) {
+      return NextResponse.json(
+        { error: "Пароль должен быть от 6 до 128 символов" },
         { status: 400 }
       );
     }
@@ -42,24 +36,19 @@ export async function POST(request: Request) {
       );
     }
 
-    // Генерируем временный пароль и токен для первого входа
-    const tempPassword = generateTempPassword();
-    const hashedPassword = await hash(tempPassword, 10);
-    const firstLoginToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    const hashedPassword = await hash(rawPassword, 10);
     const inviteCode = generateInviteCode();
 
-    // Создаем первого родителя как администратора семьи
     const admin = await prisma.user.create({
       data: {
         name: parentName,
         email,
         password: hashedPassword,
-        tempPassword: firstLoginToken,
         role: "FAMILY_ADMIN",
         points: 0,
-        mustChangePassword: true,
-        isEmailVerified: false
-      }
+        mustChangePassword: false,
+        isEmailVerified: false,
+      },
     });
 
     // Создаем семью
@@ -77,33 +66,35 @@ export async function POST(request: Request) {
       data: { familyId: family.id }
     });
 
-    console.log(`✅ Создана семья: ${familyName} с ${parentType} ${parentName} (${email})`);
-
-    // Генерируем ссылку для первого входа
-    const baseUrl = process.env.NEXTAUTH_URL || 'https://family-stars.vercel.app';
-    const firstLoginUrl = `${baseUrl}/first-login?token=${firstLoginToken}&user=${encodeURIComponent(parentName)}`;
-
-    return NextResponse.json({
+    const baseUrl = process.env.NEXTAUTH_URL || "https://family-stars.vercel.app";
+    const payload: Record<string, unknown> = {
       success: true,
       message: `Семья "${familyName}" успешно создана!`,
       parentName,
       parentType,
-      firstLoginUrl,
       loginUrl: `${baseUrl}/login`,
-      familyCode: inviteCode
-    });
+      familyCode: inviteCode,
+      messageDetail: "Войдите на странице входа, введя код семьи и заданный пароль.",
+    };
+
+    return NextResponse.json(payload);
 
   } catch (error) {
     console.error("❌ Ошибка регистрации семьи:", error);
+    const details = error instanceof Error ? error.message : String(error);
+    const isUniqueName = /Unique constraint.*[\"']?name[\"']?/i.test(details) || /unique.*name/i.test(details);
+    const isUniqueEmail = /Unique constraint.*[\"']?email[\"']?/i.test(details) || /unique.*email/i.test(details);
+    let userError = "Ошибка регистрации семьи";
+    if (isUniqueName) {
+      userError = "Пользователь с таким именем уже зарегистрирован. Укажите уникальное имя (например, Мама Мария или Папа Алексей).";
+    } else if (isUniqueEmail) {
+      userError = "Пользователь с таким email уже существует";
+    } else if (details) {
+      userError = details;
+    }
     return NextResponse.json(
-      { 
-        error: "Ошибка регистрации семьи",
-        details: error instanceof Error ? error.message : String(error)
-      }, 
+      { error: userError, details },
       { status: 500 }
     );
-
-  } finally {
-    await prisma.$disconnect();
   }
 } 

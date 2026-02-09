@@ -2,12 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "@/contexts/LanguageContext";
 
 export default function RegisterFamily() {
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [familyName, setFamilyName] = useState("");
   const [parentName, setParentName] = useState("");
   const [parentType, setParentType] = useState<"папа" | "мама">("папа");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -17,8 +20,12 @@ export default function RegisterFamily() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !familyName || !parentName) {
-      setError("Все поля обязательны для заполнения");
+    if (!email || !familyName || !parentName || !password) {
+      setError(t("register.allRequired"));
+      return;
+    }
+    if (password.length < 6 || password.length > 128) {
+      setError(t("register.passwordLength"));
       return;
     }
 
@@ -34,21 +41,24 @@ export default function RegisterFamily() {
           email, 
           familyName, 
           parentName,
-          parentType 
+          parentType,
+          password 
         })
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || "Ошибка регистрации");
+        const msg = data.error || t("register.error");
+        const withDetails = data.details && data.details !== msg ? `${msg} (${data.details})` : msg;
+        throw new Error(withDetails);
       }
 
       setSuccess(data.message);
       setResult(data);
       
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Ошибка регистрации");
+      setError(error instanceof Error ? error.message : t("register.error"));
     } finally {
       setLoading(false);
     }
@@ -367,10 +377,10 @@ export default function RegisterFamily() {
         <div className="premium-card">
           <div>
             <h1 className="premium-title">
-              🏠 Создать семью
+              🏠 {t("register.title")}
             </h1>
             <p className="premium-subtitle">
-              Создание новой семьи
+              {t("register.subtitle")}
             </p>
           </div>
 
@@ -389,24 +399,24 @@ export default function RegisterFamily() {
           {result ? (
             <div className="result-card">
               <h3 className="result-title">
-                🎉 Семья успешно создана!
+                🎉 {t("register.successTitle")}
               </h3>
               
               <div>
                 <div className="result-item">
-                  <span className="result-label">Семья:</span>
+                  <span className="result-label">{t("register.family")}:</span>
                   <span className="result-value">{familyName}</span>
                 </div>
                 
                 <div className="result-item">
-                  <span className="result-label">Администратор:</span>
+                  <span className="result-label">{t("register.admin")}:</span>
                   <span className="result-value">
-                    {result.parentType === "папа" ? "👨" : "👩"} {result.parentName} ({result.parentType})
+                    {result.parentType === "папа" ? "👨" : "👩"} {result.parentName} ({result.parentType === "папа" ? t("register.dad") : t("register.mom")})
                   </span>
                 </div>
                 
                 <div className="result-item">
-                  <span className="result-label">Код семьи:</span>
+                  <span className="result-label">{t("register.familyCode")}:</span>
                   <span className="result-value">{result.familyCode}</span>
                 </div>
                 
@@ -414,23 +424,36 @@ export default function RegisterFamily() {
 
               <div className="info-box">
                 <p className="info-text">
-                  💡 <strong>Готово!</strong> Теперь нажмите кнопку ниже, чтобы создать пароль и войти в систему.
+                  💡 <strong>{t("register.doneTip")}</strong>{" "}
+                  {result.firstLoginUrl
+                    ? t("register.doneTipWithUrl")
+                    : t("register.doneTipNoUrl")}
                 </p>
               </div>
 
-              <button
-                onClick={() => window.location.href = result.firstLoginUrl}
-                className="premium-button success"
-                style={{ width: '100%', marginTop: '24px' }}
-              >
-                🔐 Создать пароль и войти
-              </button>
+              {result.firstLoginUrl ? (
+                <button
+                  onClick={() => window.location.href = result.firstLoginUrl}
+                  className="premium-button success"
+                  style={{ width: "100%", marginTop: "24px" }}
+                >
+                  🔐 {t("register.createPasswordAndLogin")}
+                </button>
+              ) : (
+                <button
+                  onClick={() => router.push("/login")}
+                  className="premium-button success"
+                  style={{ width: "100%", marginTop: "24px" }}
+                >
+                  🔐 {t("register.goToLoginAndPassword")}
+                </button>
+              )}
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="premium-form">
               <div className="form-group">
                 <label htmlFor="familyName" className="form-label">
-                  Название семьи
+                  {t("register.familyName")}
                 </label>
                 <input
                   type="text"
@@ -438,14 +461,14 @@ export default function RegisterFamily() {
                   value={familyName}
                   onChange={(e) => setFamilyName(e.target.value)}
                   className="form-input"
-                  placeholder="Семья Ивановых"
+                  placeholder={t("register.familyNamePlaceholder")}
                   required
                 />
               </div>
 
               <div className="form-group">
                 <label htmlFor="parentName" className="form-label">
-                  Имя первого родителя
+                  {t("register.parentName")}
                 </label>
                 <input
                   type="text"
@@ -453,14 +476,14 @@ export default function RegisterFamily() {
                   value={parentName}
                   onChange={(e) => setParentName(e.target.value)}
                   className="form-input"
-                  placeholder="Например: Александр"
+                  placeholder={t("register.parentNamePlaceholder")}
                   required
                 />
               </div>
 
               <div className="form-group">
                 <label className="form-label">
-                  Кто будет первым администратором?
+                  {t("register.whoAdmin")}
                 </label>
                 <div style={{
                   display: "flex",
@@ -473,7 +496,7 @@ export default function RegisterFamily() {
                     className={`premium-button ${parentType === "папа" ? "primary" : "secondary"}`}
                     style={{ flex: 1 }}
                   >
-                    👨 Папа
+                    👨 {t("register.dad")}
                   </button>
                   <button
                     type="button"
@@ -481,14 +504,31 @@ export default function RegisterFamily() {
                     className={`premium-button ${parentType === "мама" ? "primary" : "secondary"}`}
                     style={{ flex: 1 }}
                   >
-                    👩 Мама
+                    👩 {t("register.mom")}
                   </button>
                 </div>
               </div>
 
               <div className="form-group">
+                <label htmlFor="password" className="form-label">
+                  {t("register.passwordLabel")}
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="form-input"
+                  placeholder={t("register.passwordPlaceholder")}
+                  required
+                  minLength={6}
+                  maxLength={128}
+                />
+              </div>
+
+              <div className="form-group">
                 <label htmlFor="email" className="form-label">
-                  Email для восстановления пароля
+                  {t("register.emailLabel")}
                 </label>
                 <input
                   type="email"
@@ -496,7 +536,7 @@ export default function RegisterFamily() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="form-input"
-                  placeholder="admin@example.com"
+                  placeholder={t("register.emailPlaceholder")}
                   required
                 />
               </div>
@@ -507,19 +547,26 @@ export default function RegisterFamily() {
                 className="premium-button primary"
                 style={{ width: '100%' }}
               >
-                {loading ? "Создание..." : "Создать семью"}
+                {loading ? t("register.creating") : t("register.createFamily")}
               </button>
             </form>
           )}
 
           <div className="login-link">
             <p className="login-text">
-              Уже есть аккаунт?{" "}
+              {t("register.alreadyHave")}{" "}
               <span
                 onClick={handleGoToLogin}
                 className="login-button"
               >
-                Войти
+                {t("register.login")}
+              </span>
+              {" · "}
+              <span
+                onClick={() => router.push("/")}
+                className="login-button"
+              >
+                {t("register.backToHome")}
               </span>
             </p>
           </div>

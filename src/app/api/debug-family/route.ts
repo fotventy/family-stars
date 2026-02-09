@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/adminGuard";
 
-const prisma = new PrismaClient();
-
-export async function GET() {
+export async function GET(request: Request) {
+  const err = await requireAdmin(request);
+  if (err) return err;
   try {
     console.log("🔍 Получаем все семьи для отладки...");
     

@@ -37,6 +37,7 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
   const [newMemberName, setNewMemberName] = useState("");
   const [newMemberRole, setNewMemberRole] = useState("CHILD");
   const [newMemberGender, setNewMemberGender] = useState("сын");
+  const [newMemberEmail, setNewMemberEmail] = useState("");
   const [addingMember, setAddingMember] = useState(false);
   const [newMemberResult, setNewMemberResult] = useState<any>(null);
 
@@ -85,8 +86,9 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
         body: JSON.stringify({
           name: newMemberName,
           role: newMemberRole,
-          gender: newMemberGender
-        })
+          gender: newMemberGender,
+          email: newMemberEmail.trim() || undefined,
+        }),
       });
 
       const data = await response.json();
@@ -100,6 +102,7 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
       setNewMemberName("");
       setNewMemberRole("CHILD");
       setNewMemberGender("сын");
+      setNewMemberEmail("");
       setShowAddForm(false);
       
       // Перезагружаем семью
@@ -641,24 +644,38 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
                   <span className="member-result-label">Имя:</span>
                   <span className="member-result-value">{newMemberResult.name}</span>
                 </div>
-                <div className="member-result-item">
-                  <span className="member-result-label">Временный пароль:</span>
-                  <span className="member-result-value">{newMemberResult.tempPassword}</span>
-                  <button
-                    onClick={() => copyToClipboard(newMemberResult.tempPassword)}
-                    className="copy-button"
-                  >
-                    📋 Копировать
-                  </button>
-                </div>
-                <div className="member-result-item">
-                  <span className="member-result-label">Ссылка для входа:</span>
-                  <button
-                    onClick={() => copyToClipboard(newMemberResult.firstLoginUrl)}
-                    className="copy-button"
-                  >
-                    📋 Копировать ссылку
-                  </button>
+                {newMemberResult.emailSent && (
+                  <div className="member-result-item">
+                    <span className="member-result-label">Письмо отправлено на:</span>
+                    <span className="member-result-value">{newMemberResult.email}</span>
+                  </div>
+                )}
+                <div className="member-result-item" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
+                  <span className="member-result-label">Ссылка для приглашения — отправьте удобным способом:</span>
+                  <p style={{ fontSize: '12px', opacity: 0.9, margin: '0 0 6px 0' }}>
+                    Скопируйте ссылку и вставьте в мессенджер, соцсеть, SMS или перешлите в любом приложении. {newMemberResult.emailSent && "Копия приглашения также отправлена на почту."}
+                  </p>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', width: '100%' }}>
+                    <code style={{
+                      fontSize: '12px',
+                      wordBreak: 'break-all',
+                      background: 'rgba(0,0,0,0.2)',
+                      padding: '8px',
+                      borderRadius: '4px',
+                      maxWidth: '100%',
+                    }}>
+                      {newMemberResult.firstLoginUrl}
+                    </code>
+                    <button
+                      onClick={() => copyToClipboard(newMemberResult.firstLoginUrl)}
+                      className="copy-button"
+                    >
+                      📋 Копировать ссылку
+                    </button>
+                  </div>
+                  <span style={{ fontSize: '12px', opacity: 0.85 }}>
+                    Ссылка действительна 7 дней. По ней человек задаст пароль и войдёт в семью.
+                  </span>
                 </div>
                 <button
                   onClick={() => setNewMemberResult(null)}
@@ -741,6 +758,22 @@ export default function FamilyManagementModal({ isOpen, onClose }: Props) {
                         </>
                       )}
                     </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label className="form-label">
+                      Email (необязательно)
+                    </label>
+                    <input
+                      type="email"
+                      value={newMemberEmail}
+                      onChange={(e) => setNewMemberEmail(e.target.value)}
+                      className="form-input"
+                      placeholder="Если указать — приглашение дублируется на почту"
+                    />
+                    <span className="form-hint" style={{ fontSize: "12px", opacity: 0.85, marginTop: "4px", display: "block" }}>
+                      Ссылку для входа вы всегда сможете скопировать и отправить в мессенджере или любом приложении. Укажите email, если хотите, чтобы приглашение дополнительно пришло на почту.
+                    </span>
                   </div>
 
                   <div className="form-buttons">

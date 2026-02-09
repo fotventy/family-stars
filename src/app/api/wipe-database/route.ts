@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/adminGuard";
 
-const prisma = new PrismaClient();
-
-export async function DELETE() {
+export async function DELETE(request: Request) {
+  const adminError = await requireAdmin(request);
+  if (adminError) return adminError;
   try {
     console.log("🔥 Начинаем очистку пользователей и семей...");
     
@@ -57,12 +58,12 @@ export async function DELETE() {
   }
 }
 
-// Также добавим GET метод для безопасности (чтобы случайно не удалить)
-export async function GET() {
+export async function GET(request: Request) {
+  const adminError = await requireAdmin(request);
+  if (adminError) return adminError;
   return NextResponse.json({
     warning: "⚠️ ОПАСНАЯ ОПЕРАЦИЯ!",
-    message: "Этот endpoint удалит всех пользователей и семьи (задачи и подарки останутся).",
-    instruction: "Используйте метод DELETE для выполнения операции.",
-    example: "curl -X DELETE https://family-stars.vercel.app/api/wipe-database"
+    message: "Этот endpoint удалит всех пользователей и семьи. Требуется X-Admin-Key.",
+    instruction: "Используйте метод DELETE с заголовком X-Admin-Key для выполнения.",
   });
 } 

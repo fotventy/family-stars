@@ -1,31 +1,22 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    
     if (!session) {
-      return NextResponse.json(
-        { error: "Не авторизован" }, 
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Не авторизован" }, { status: 401 });
     }
-
-    // Получаем все активные подарки (Gift - общие для всех)
+    const familyId = (session as any).user.familyId as string | undefined;
     const gifts = await prisma.gift.findMany({
       where: {
-        isActive: true
+        isActive: true,
+        OR: [{ familyId: null }, ...(familyId ? [{ familyId }] : [])],
       },
-      orderBy: {
-        sortOrder: 'asc'
-      }
+      orderBy: { sortOrder: "asc" },
     });
-
     return NextResponse.json(gifts);
   } catch (error) {
     console.error("Ошибка при получении подарков:", error);
@@ -40,30 +31,32 @@ export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session || (session as any).user.role !== "PARENT") {
+    if (
+      !session ||
+      ((session as any).user.role !== "PARENT" &&
+        (session as any).user.role !== "FAMILY_ADMIN")
+    ) {
       return NextResponse.json(
-        { error: "Недостаточно прав" }, 
+        { error: "Недостаточно прав" },
         { status: 403 }
       );
     }
-
+    const familyId = (session as any).user.familyId as string | undefined;
     const { title, description, points, emoji } = await request.json();
-
     if (!title || points === undefined) {
       return NextResponse.json(
-        { error: "Название и баллы обязательны" }, 
+        { error: "Название и баллы обязательны" },
         { status: 400 }
       );
     }
-
-    // Создаем подарок без userId (Gift - общая сущность)
     const newGift = await prisma.gift.create({
       data: {
         title,
         description,
         points,
-        emoji
-      }
+        emoji,
+        ...(familyId ? { familyId } : {}),
+      },
     });
 
     return NextResponse.json(newGift, { status: 201 });
@@ -80,22 +73,32 @@ export async function PUT(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session || (session as any).user.role !== "PARENT") {
+    if (
+      !session ||
+      ((session as any).user.role !== "PARENT" &&
+        (session as any).user.role !== "FAMILY_ADMIN")
+    ) {
       return NextResponse.json(
-        { error: "Недостаточно прав" }, 
+        { error: "Недостаточно прав" },
         { status: 403 }
       );
     }
-
-    const { id, title, description, points, isActive, emoji } = await request.json();
-
+    const familyId = (session as any).user.familyId as string | undefined;
+    const { id, title, description, points, isActive, emoji } =
+      await request.json();
     if (!id) {
       return NextResponse.json(
-        { error: "ID подарка обязателен" }, 
+        { error: "ID подарка обязателен" },
         { status: 400 }
       );
     }
-
+    const existing = await prisma.gift.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Подарок не найден" }, { status: 404 });
+    }
+    if (familyId && existing.familyId !== familyId) {
+      return NextResponse.json({ error: "Недостаточно прав" }, { status: 403 });
+    }
     const updatedGift = await prisma.gift.update({
       where: { id },
       data: {
@@ -121,23 +124,32 @@ export async function DELETE(request: Request) {
   try {
     const session = await getServerSession(authOptions);
     
-    if (!session || (session as any).user.role !== "PARENT") {
+    if (
+      !session ||
+      ((session as any).user.role !== "PARENT" &&
+        (session as any).user.role !== "FAMILY_ADMIN")
+    ) {
       return NextResponse.json(
-        { error: "Недостаточно прав" }, 
+        { error: "Недостаточно прав" },
         { status: 403 }
       );
     }
-
+    const familyId = (session as any).user.familyId as string | undefined;
     const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
+    const id = searchParams.get("id");
     if (!id) {
       return NextResponse.json(
-        { error: "ID подарка обязателен" }, 
+        { error: "ID подарка обязателен" },
         { status: 400 }
       );
     }
-
+    const existing = await prisma.gift.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json({ error: "Подарок не найден" }, { status: 404 });
+    }
+    if (familyId && existing.familyId !== familyId) {
+      return NextResponse.json({ error: "Недостаточно прав" }, { status: 403 });
+    }
     await prisma.gift.delete({
       where: { id }
     });

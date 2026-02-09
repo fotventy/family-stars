@@ -1,39 +1,43 @@
 import { NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request: Request) {
   try {
     const session = await getServerSession(authOptions);
-    
-    if (!session || ((session as any).user.role !== 'PARENT' && (session as any).user.role !== 'FAMILY_ADMIN')) {
+
+    if (
+      !session ||
+      ((session as any).user.role !== "PARENT" &&
+        (session as any).user.role !== "FAMILY_ADMIN")
+    ) {
       return NextResponse.json(
-        { error: "Недостаточно прав" }, 
+        { error: "Недостаточно прав" },
         { status: 403 }
       );
     }
 
+    const familyId = (session as any).user.familyId as string | undefined;
     const { searchParams } = new URL(request.url);
-    const period = searchParams.get('period') || 'week';
+    const period = searchParams.get("period") || "week";
 
     const startDate = new Date();
-    if (period === 'week') {
+    if (period === "week") {
       startDate.setDate(startDate.getDate() - 7);
     } else {
       startDate.setMonth(startDate.getMonth() - 1);
     }
 
-    // Для семейной системы - все родители видят всех детей
+    const childrenWhere: { role: string; familyId?: string | null } = {
+      role: "CHILD",
+    };
+    if (familyId) {
+      childrenWhere.familyId = familyId;
+    }
     const children = await prisma.user.findMany({
-      where: {
-        role: 'CHILD'
-      }
+      where: childrenWhere,
     });
-
-    console.log(`📊 Родитель ${(session as any).user.name} запрашивает статистику по ${children.length} детям: ${children.map(c => c.name).join(', ')}`);
 
     const statistics = await Promise.all(children.map(async (child) => {
       const completedTasks = await prisma.userTask.findMany({
@@ -61,8 +65,6 @@ export async function GET(request: Request) {
         giftsRedeemed: redeemedGifts.length
       };
     }));
-
-    console.log(`✅ Статистика сформирована для ${statistics.length} детей`);
 
     return NextResponse.json(statistics);
   } catch (error) {
