@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { useTranslation } from "@/contexts/LanguageContext";
 
 export default function RegisterFamily() {
@@ -540,6 +541,32 @@ export default function RegisterFamily() {
                   placeholder={t("register.emailPlaceholder")}
                   required
                 />
+              </div>
+
+              <div style={{ marginTop: "20px", marginBottom: "20px", textAlign: "center" }}>
+                <p style={{ color: "rgba(255,255,255,0.85)", fontSize: "14px", marginBottom: "12px" }}>
+                  {t("register.orContinueWith")}
+                </p>
+                <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+                  <button
+                    type="button"
+                    onClick={() => signIn("google", { callbackUrl: "/parent" })}
+                    className="premium-button secondary"
+                    style={{ flex: 1, minWidth: "140px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M16.51 8H8.98v3h4.3c-.18 1-.74 1.48-1.6 2.04v2.01h2.59a7.41 7.41 0 0 0 2.19-5.05z"/><path fill="#34A853" d="M8.98 17c2.16 0 3.97-.72 5.3-1.94l-2.6-2a4.4 4.4 0 0 1-2.7.93 4.36 4.36 0 0 1-4.1-3H1.83v2.07A7.17 7.17 0 0 0 8.98 17z"/><path fill="#FBBC05" d="M4.18 10.99a4.33 4.33 0 0 1 0-2.82V6.1H1.83a7.17 7.17 0 0 0 0 6.42l2.35-1.53z"/><path fill="#EA4335" d="M8.98 4.18c1.23 0 2.34.42 3.2 1.2l2.4-2.4A7 7 0 0 0 8.98 1a7.17 7.17 0 0 0-7.15 6.42L4.18 6.1a4.36 4.36 0 0 1 4.8-1.92z"/></svg>
+                    {t("register.continueWithGoogle")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => signIn("apple", { callbackUrl: "/parent" })}
+                    className="premium-button secondary"
+                    style={{ flex: 1, minWidth: "140px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09l.01-.01zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25z"/></svg>
+                    {t("register.continueWithApple")}
+                  </button>
+                </div>
               </div>
 
               <button

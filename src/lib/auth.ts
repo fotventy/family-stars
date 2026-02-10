@@ -2,8 +2,13 @@ import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import AppleProvider from "next-auth/providers/apple";
-import { compare } from "bcryptjs";
+import { compare, hash } from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { getDefaultTasks, getDefaultGifts } from "@/lib/defaultTasksAndGifts";
+
+function generateInviteCode() {
+  return Math.random().toString(36).substring(2, 10).toUpperCase();
+}
 
 const googleEnabled =
   process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET;
@@ -92,9 +97,64 @@ export const authOptions: NextAuthOptions = {
         const email = (profile as { email?: string })?.email ?? user.email;
         if (!email) return false;
         const existing = await prisma.user.findUnique({
-          where: { email },
+          where: { email: email.toLowerCase() },
         });
-        if (!existing) return false;
+        if (existing) return true;
+        // Новый пользователь: создаём семью и админа (регистрация через SSO)
+        const name = (user.name || (profile as { name?: string })?.name || email.split("@")[0] || "User").trim() || "User";
+        const image = user.image ?? (profile as { picture?: string })?.picture ?? undefined;
+        const noPasswordPlaceholder = await hash(
+          `sso-${Date.now()}-${Math.random().toString(36)}`,
+          10
+        );
+        const inviteCode = generateInviteCode();
+        const admin = await prisma.user.create({
+          data: {
+            name,
+            email: email.toLowerCase(),
+            password: noPasswordPlaceholder,
+            role: "FAMILY_ADMIN",
+            points: 0,
+            mustChangePassword: false,
+            isEmailVerified: true,
+            image: image ?? null,
+          },
+        });
+        const family = await prisma.family.create({
+          data: {
+            name: `${name}'s Family`,
+            inviteCode,
+            adminId: admin.id,
+          },
+        });
+        await prisma.user.update({
+          where: { id: admin.id },
+          data: { familyId: family.id },
+        });
+        const defaultTasks = getDefaultTasks("en");
+        const defaultGifts = getDefaultGifts("en");
+        await prisma.task.createMany({
+          data: defaultTasks.map((t, i) => ({
+            familyId: family.id,
+            title: t.title,
+            description: t.description ?? null,
+            points: t.points,
+            emoji: t.emoji ?? null,
+            sortOrder: i,
+            isActive: true,
+          })),
+        });
+        await prisma.gift.createMany({
+          data: defaultGifts.map((g, i) => ({
+            familyId: family.id,
+            title: g.title,
+            description: g.description ?? null,
+            points: g.points,
+            emoji: g.emoji ?? null,
+            sortOrder: i,
+            isActive: true,
+          })),
+        });
         return true;
       }
       return true;

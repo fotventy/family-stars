@@ -161,6 +161,9 @@ const ko: Messages = {
   "register.alreadyHave": "이미 가족이 있나요?",
   "register.login": "로그인",
   "register.backToHome": "홈으로",
+  "register.orContinueWith": "또는 다음으로 계속",
+  "register.continueWithGoogle": "Google로 계속",
+  "register.continueWithApple": "Apple로 계속",
 
   "profile.title": "프로필 설정",
   "profile.username": "사용자 이름",

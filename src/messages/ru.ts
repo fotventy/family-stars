@@ -217,6 +217,9 @@ const ru: Messages = {
   "register.alreadyHave": "Уже есть семья?",
   "register.login": "Войти",
   "register.backToHome": "На главную",
+  "register.orContinueWith": "Или продолжить с",
+  "register.continueWithGoogle": "Войти через Google",
+  "register.continueWithApple": "Войти через Apple",
 
   // welcome
   "welcome.title": "Добро пожаловать в Семейные Звёздочки",

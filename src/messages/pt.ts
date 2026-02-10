@@ -161,6 +161,9 @@ const pt: Messages = {
   "register.alreadyHave": "Já tem uma família?",
   "register.login": "Entrar",
   "register.backToHome": "Início",
+  "register.orContinueWith": "Ou continuar com",
+  "register.continueWithGoogle": "Continuar com Google",
+  "register.continueWithApple": "Continuar com Apple",
 
   "profile.title": "Configurações do perfil",
   "profile.username": "Nome de usuário",

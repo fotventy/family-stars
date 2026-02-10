@@ -161,6 +161,9 @@ const ja: Messages = {
   "register.alreadyHave": "すでに家族がありますか？",
   "register.login": "ログイン",
   "register.backToHome": "ホームへ",
+  "register.orContinueWith": "または次で続行",
+  "register.continueWithGoogle": "Googleで続行",
+  "register.continueWithApple": "Appleで続行",
 
   "profile.title": "プロフィール設定",
   "profile.username": "ユーザー名",

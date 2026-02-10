@@ -161,6 +161,9 @@ const zh: Messages = {
   "register.alreadyHave": "已有家庭？",
   "register.login": "登录",
   "register.backToHome": "返回首页",
+  "register.orContinueWith": "或使用以下方式继续",
+  "register.continueWithGoogle": "使用 Google 继续",
+  "register.continueWithApple": "使用 Apple 继续",
 
   "profile.title": "个人资料设置",
   "profile.username": "用户名",
