@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Bar } from 'react-chartjs-2';
 import { 
   Chart as ChartJS, 
@@ -9,6 +9,7 @@ import {
   Tooltip, 
   Legend 
 } from 'chart.js';
+import { useTranslation } from '@/contexts/LanguageContext';
 
 ChartJS.register(
   CategoryScale,
@@ -28,6 +29,7 @@ interface StatisticsData {
 }
 
 export const StatisticsChart: React.FC = () => {
+  const { t } = useTranslation();
   const [statisticsData, setStatisticsData] = useState<StatisticsData[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState<'week' | 'month'>('week');
   const [chartType, setChartType] = useState<'bar' | 'histogram'>('bar');
@@ -44,47 +46,44 @@ export const StatisticsChart: React.FC = () => {
       if (response.ok && Array.isArray(data)) {
         setStatisticsData(data);
       } else {
-        console.error("Ошибка API /api/statistics:", data);
-        setStatisticsData([]); // Устанавливаем пустой массив при ошибке
+        setStatisticsData([]);
       }
     } catch (error) {
-      console.error("Ошибка при загрузке статистики:", error);
-      setStatisticsData([]); // Устанавливаем пустой массив при ошибке
+      setStatisticsData([]);
     }
   };
 
-  const chartData = {
+  const chartData = useMemo(() => ({
     labels: statisticsData.map(stat => stat.userName),
     datasets: [
       {
-        label: 'Выполненные задачи',
+        label: t('statistics.completedTasks'),
         data: statisticsData.map(stat => stat.tasksCompleted),
         backgroundColor: 'rgba(75, 192, 192, 0.6)',
         borderColor: 'rgba(75, 192, 192, 1)',
         borderWidth: 1
       },
       {
-        label: 'Заработанные очки',
+        label: t('statistics.earnedPoints'),
         data: statisticsData.map(stat => stat.pointsEarned),
         backgroundColor: 'rgba(255, 206, 86, 0.6)',
         borderColor: 'rgba(255, 206, 86, 1)',
         borderWidth: 1
       },
       {
-        label: 'Полученные призы',
+        label: t('statistics.receivedPrizes'),
         data: statisticsData.map(stat => stat.giftsRedeemed),
         backgroundColor: 'rgba(255, 99, 132, 0.6)',
         borderColor: 'rgba(255, 99, 132, 1)',
         borderWidth: 1
       }
     ]
-  };
+  }), [statisticsData, t]);
 
-  // Создаем гистограмму для распределения очков
   const createHistogramData = () => {
     const points = statisticsData.map(stat => stat.pointsEarned);
     const maxPoints = Math.max(...points, 0);
-    const binSize = Math.max(10, Math.ceil(maxPoints / 10)); // Размер бина минимум 10
+    const binSize = Math.max(10, Math.ceil(maxPoints / 10));
     const numBins = Math.ceil(maxPoints / binSize) || 1;
     
     const bins = Array(numBins).fill(0);
@@ -100,7 +99,7 @@ export const StatisticsChart: React.FC = () => {
     return {
       labels: binLabels,
       datasets: [{
-        label: 'Количество детей',
+        label: t('statistics.childrenCount'),
         data: bins,
         backgroundColor: 'rgba(54, 162, 235, 0.6)',
         borderColor: 'rgba(54, 162, 235, 1)',
@@ -109,7 +108,7 @@ export const StatisticsChart: React.FC = () => {
     };
   };
 
-  const chartOptions = {
+  const chartOptions = useMemo(() => ({
     responsive: true,
     plugins: {
       legend: {
@@ -118,8 +117,8 @@ export const StatisticsChart: React.FC = () => {
       title: {
         display: true,
         text: chartType === 'bar' 
-          ? `Статистика за ${selectedPeriod === 'week' ? 'неделю' : 'месяц'}`
-          : `Распределение очков за ${selectedPeriod === 'week' ? 'неделю' : 'месяц'}`
+          ? (selectedPeriod === 'week' ? t('statistics.forWeek') : t('statistics.forMonth'))
+          : (selectedPeriod === 'week' ? t('statistics.pointsDistributionWeek') : t('statistics.pointsDistributionMonth'))
       }
     },
     scales: {
@@ -127,24 +126,23 @@ export const StatisticsChart: React.FC = () => {
         beginAtZero: true,
         title: {
           display: true,
-          text: chartType === 'bar' ? 'Значения' : 'Количество детей'
+          text: chartType === 'bar' ? t('statistics.values') : t('statistics.childrenCount')
         }
       },
       x: {
         title: {
           display: chartType === 'histogram',
-          text: 'Диапазон очков'
+          text: t('statistics.pointsRange')
         }
       }
     }
-  };
+  }), [chartType, selectedPeriod, t]);
 
   return (
     <div className="bg-fortnite-accent p-4 rounded-lg">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-2xl font-fortnite text-white">Статистика</h2>
+        <h2 className="text-2xl font-fortnite text-white">{t('statistics.title')}</h2>
         <div className="flex gap-2">
-          {/* Переключатель периода */}
           <div>
             <button 
               onClick={() => setSelectedPeriod('week')}
@@ -155,7 +153,7 @@ export const StatisticsChart: React.FC = () => {
                   : 'text-gray-400 hover:bg-fortnite-background'}
               `}
             >
-              Неделя
+              {t('statistics.week')}
             </button>
             <button 
               onClick={() => setSelectedPeriod('month')}
@@ -166,11 +164,10 @@ export const StatisticsChart: React.FC = () => {
                   : 'text-gray-400 hover:bg-fortnite-background'}
               `}
             >
-              Месяц
+              {t('statistics.month')}
             </button>
           </div>
           
-          {/* Переключатель типа графика */}
           <div className="ml-4">
             <button 
               onClick={() => setChartType('bar')}
@@ -181,7 +178,7 @@ export const StatisticsChart: React.FC = () => {
                   : 'text-gray-400 hover:bg-fortnite-background'}
               `}
             >
-              График
+              {t('statistics.graph')}
             </button>
             <button 
               onClick={() => setChartType('histogram')}
@@ -192,7 +189,7 @@ export const StatisticsChart: React.FC = () => {
                   : 'text-gray-400 hover:bg-fortnite-background'}
               `}
             >
-              Гистограмма
+              {t('statistics.histogram')}
             </button>
           </div>
         </div>
@@ -205,7 +202,7 @@ export const StatisticsChart: React.FC = () => {
         />
       ) : (
         <div className="text-center text-gray-400">
-          Нет данных для отображения
+          {t('statistics.noData')}
         </div>
       )}
     </div>

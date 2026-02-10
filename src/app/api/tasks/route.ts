@@ -99,7 +99,8 @@ export async function PUT(request: Request) {
     if (!existing) {
       return NextResponse.json({ error: "Задача не найдена" }, { status: 404 });
     }
-    if (familyId && existing.familyId !== familyId) {
+    // Записи с familyId: null (legacy) — разрешаем редактировать/удалять
+    if (existing.familyId != null && familyId && existing.familyId !== familyId) {
       return NextResponse.json({ error: "Недостаточно прав" }, { status: 403 });
     }
     const updatedTask = await prisma.task.update({
@@ -149,7 +150,8 @@ export async function DELETE(request: Request) {
     if (!existing) {
       return NextResponse.json({ error: "Задача не найдена" }, { status: 404 });
     }
-    if (familyId && existing.familyId !== familyId) {
+    // Записи с familyId: null (legacy) — разрешаем редактировать/удалять
+    if (existing.familyId != null && familyId && existing.familyId !== familyId) {
       return NextResponse.json({ error: "Недостаточно прав" }, { status: 403 });
     }
     await prisma.task.delete({

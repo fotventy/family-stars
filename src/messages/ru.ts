@@ -91,6 +91,25 @@ const ru: Messages = {
   "parent.created": "Создан",
   "parent.emptyOrders": "Пока нет выборов",
   "parent.emptyOrdersHint": "Члены семьи ещё не выбирали подарки",
+  "parent.statisticsAchievements": "Статистика достижений",
+
+  // statistics
+  "statistics.title": "Статистика",
+  "statistics.week": "Неделя",
+  "statistics.month": "Месяц",
+  "statistics.graph": "График",
+  "statistics.histogram": "Гистограмма",
+  "statistics.forWeek": "Статистика за неделю",
+  "statistics.forMonth": "Статистика за месяц",
+  "statistics.pointsDistributionWeek": "Распределение очков за неделю",
+  "statistics.pointsDistributionMonth": "Распределение очков за месяц",
+  "statistics.completedTasks": "Выполненные задачи",
+  "statistics.earnedPoints": "Заработанные очки",
+  "statistics.receivedPrizes": "Полученные призы",
+  "statistics.values": "Значения",
+  "statistics.childrenCount": "Количество детей",
+  "statistics.pointsRange": "Диапазон очков",
+  "statistics.noData": "Нет данных для отображения",
 
   // login
   "login.title": "Вход в семью",

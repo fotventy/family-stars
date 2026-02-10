@@ -91,6 +91,25 @@ const en: Messages = {
   "parent.created": "Created",
   "parent.emptyOrders": "No choices yet",
   "parent.emptyOrdersHint": "Family members have not chosen gifts yet",
+  "parent.statisticsAchievements": "Achievement statistics",
+
+  // statistics
+  "statistics.title": "Statistics",
+  "statistics.week": "Week",
+  "statistics.month": "Month",
+  "statistics.graph": "Graph",
+  "statistics.histogram": "Histogram",
+  "statistics.forWeek": "Statistics for the week",
+  "statistics.forMonth": "Statistics for the month",
+  "statistics.pointsDistributionWeek": "Points distribution for the week",
+  "statistics.pointsDistributionMonth": "Points distribution for the month",
+  "statistics.completedTasks": "Completed tasks",
+  "statistics.earnedPoints": "Earned points",
+  "statistics.receivedPrizes": "Received prizes",
+  "statistics.values": "Values",
+  "statistics.childrenCount": "Number of children",
+  "statistics.pointsRange": "Points range",
+  "statistics.noData": "No data to display",
 
   // login
   "login.title": "Family login",

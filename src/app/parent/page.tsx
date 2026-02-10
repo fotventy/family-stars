@@ -1316,7 +1316,12 @@ export default function ParentDashboard() {
               </div>
 
               <div className="cards-grid users">
-                {users.map(user => (
+                {users.map(user => {
+                  const currentUserId = (session?.user as { id?: string })?.id;
+                  const currentUserRole = (session?.user as { role?: string })?.role;
+                  const canEdit = user.role === "CHILD" || currentUserRole === "FAMILY_ADMIN";
+                  const canDelete = user.role === "CHILD" || (currentUserRole === "FAMILY_ADMIN" && user.id !== currentUserId);
+                  return (
                   <div key={user.id} className="premium-card">
                     <div className="card-content">
                       <div style={{textAlign: 'center'}}>
@@ -1328,27 +1333,28 @@ export default function ParentDashboard() {
                           {user.role === 'FAMILY_ADMIN' ? t("parent.roleAdmin") : user.role === 'PARENT' ? t("parent.roleParent") : t("parent.roleChild")} · {t("parent.created")}: {new Date(user.createdAt).toLocaleDateString()}
                         </p>
                         <div className="card-actions" style={{justifyContent: 'center', marginTop: '12px'}}>
-                          {user.role === 'CHILD' && (
-                            <>
-                              <button 
-                                onClick={() => handleEditUser(user)}
-                                className="premium-button edit"
-                              >
-                                ✏️
-                              </button>
-                              <button 
-                                onClick={() => deleteUser(user.id)}
-                                className="premium-button delete"
-                              >
-                                🗑️
-                              </button>
-                            </>
+                          {canEdit && (
+                            <button 
+                              onClick={() => handleEditUser(user)}
+                              className="premium-button edit"
+                            >
+                              ✏️
+                            </button>
+                          )}
+                          {canDelete && (
+                            <button 
+                              onClick={() => deleteUser(user.id)}
+                              className="premium-button delete"
+                            >
+                              🗑️
+                            </button>
                           )}
                         </div>
                       </div>
                     </div>
                   </div>
-      ))}
+                  );
+                })}
                 {users.length === 0 && (
                   <div className="empty-state">
                     <div className="empty-emoji">👨‍👩‍👧‍👦</div>
@@ -1511,7 +1517,7 @@ export default function ParentDashboard() {
             <div className="content-section fade-in-up">
               <h2 className="section-title fortnite-title" style={{textAlign: 'center', marginBottom: '32px'}}>
                 <span>📊</span>
-                Статистика достижений
+                {t("parent.statisticsAchievements")}
               </h2>
       <StatisticsChart />
     </div>

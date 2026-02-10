@@ -98,7 +98,8 @@ export async function PUT(request: Request) {
     if (!existing) {
       return NextResponse.json({ error: "Подарок не найден" }, { status: 404 });
     }
-    if (familyId && existing.familyId !== familyId) {
+    // Записи с familyId: null (legacy) — разрешаем редактировать/удалять
+    if (existing.familyId != null && familyId && existing.familyId !== familyId) {
       return NextResponse.json({ error: "Недостаточно прав" }, { status: 403 });
     }
     const updatedGift = await prisma.gift.update({
@@ -149,7 +150,8 @@ export async function DELETE(request: Request) {
     if (!existing) {
       return NextResponse.json({ error: "Подарок не найден" }, { status: 404 });
     }
-    if (familyId && existing.familyId !== familyId) {
+    // Записи с familyId: null (legacy) — разрешаем редактировать/удалять
+    if (existing.familyId != null && familyId && existing.familyId !== familyId) {
       return NextResponse.json({ error: "Недостаточно прав" }, { status: 403 });
     }
     await prisma.gift.delete({

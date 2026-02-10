@@ -202,10 +202,10 @@ export const DragDropList: React.FC<DragDropListProps> = ({
           border-radius: 8px;
           padding: 6px 8px;
           font-size: 14px;
-          opacity: 0;
+          opacity: 0.85;
           transition: all 0.3s ease;
           z-index: 10;
-          color: rgba(255, 255, 255, 0.8);
+          color: rgba(255, 255, 255, 0.9);
           font-weight: 600;
         }
 
